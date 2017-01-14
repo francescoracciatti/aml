@@ -1,0 +1,49 @@
+# Tests the structure
+
+scenario {
+
+    from 100 s {
+
+        variable global = 1
+
+        once {
+            variable local = 2
+        }
+
+        every 20 s {
+            variable local = 3
+        }
+   
+        list nodelist = [1, 2, 3]
+        filter packetfilter = (1 == 1)
+        for nodes in nodelist {
+            for packets matching packetfilter {
+                variable local = 4
+            }
+        }
+   
+    }
+    
+    from 200 s {
+
+        variable global = 1
+
+        once {
+            variable local = 2
+        }
+
+        every 20 s {
+            variable local = 3
+        }
+   
+        list nodelist = [1, 2, 3]
+        filter packetfilter = (1 == 1)
+        for nodes in nodelist {
+            for packets matching packetfilter {
+                variable local = 4
+            }
+        }
+
+    }
+    
+}
