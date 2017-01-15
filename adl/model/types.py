@@ -6,9 +6,19 @@
 # This module contains the model of the ADL types.
 # -----------------------------------------------------------------------------
 
-
 from abc import ABCMeta, abstractmethod
 import copy
+import enum
+
+@enum.unique
+class SymbolTypes(enum.Enum):
+    """
+    The ADL types supported by the symbol table.
+    """
+    VARIABLE = 'variable'
+    PACKET = 'packet'
+    FILTER = 'filter'
+    LIST = 'list'
 
 
 class Type(metaclass=ABCMeta):
@@ -20,7 +30,8 @@ class Type(metaclass=ABCMeta):
     def __init__(self, *args):
         pass
 
-
+# TODO remove
+# to be replaced with module.support.SymbolTable
 class SymbolTable(Type):
     """
     Models a symbol table.
@@ -51,11 +62,9 @@ class SymbolTable(Type):
         :param lists: the dictionary binding each identifier with its value
         :type lists: dict
         """
-
         if level < 0:
             print("[Error] the scope level of a symbol table cannot be less than 0")
             raise ValueError
-            
         self.level = level
         self.types = {}
         self.variables = {}
@@ -63,7 +72,11 @@ class SymbolTable(Type):
         self.packets = {}
         self.lists = {}
 
-        
+    
+    def empty(self):
+        return any(self.types) 
+    
+    
     def declare(self, identifier, type):
         """
         Declares the given type having the given identifier.
@@ -113,7 +126,6 @@ class SymbolTable(Type):
         
         :raise: ValueError
         """
-    
         # Defines the Variable
         if isinstance(obj, Variable):
             self.types[obj.identifier] = SymbolTable.TYPE['VARIABLE']
@@ -145,7 +157,6 @@ class SymbolTable(Type):
         :return: True if the identifier exists inside the symbol table, 
                  False otherwise
         """
-        
         if self.types.get(identifier, None) is None:
             return False
         return True
@@ -161,7 +172,6 @@ class SymbolTable(Type):
         
         :return: The type of the identifier, None otherwise
         """
-
         return self.types.get(identifier, None)
 
 
@@ -175,7 +185,6 @@ class SymbolTable(Type):
         
         :return: the variable if it exists, None otherwise
         """
-        
         return self.variables.get(identifier, None)
     
     
@@ -189,7 +198,6 @@ class SymbolTable(Type):
         
         :return: the list if it exists, None otherwise
         """
-        
         return self.lists.get(identifier, None)
     
     
@@ -197,7 +205,6 @@ class SymbolTable(Type):
         """
         Clears the symbol table.
         """
-        
         self.types.clear()
         self.variables.clear()
         self.filters.clear()
@@ -207,8 +214,24 @@ class SymbolTable(Type):
 
 class Variable(Type):
     """
-    A variable is a generic container.
+    An ADL Variable is a generic container that stores a single value.
+    It can contains a reserved keyword, an integer, a real, a string or
+    can be left uninitialized.
     """
+    
+    type = SymbolTypes.VARIABLE
+    
+    @enum.unique
+    class VariableTypes(enum.Enum):
+        """
+        Types of ADL Variables.
+        """
+        RESERVED = 'reserved'
+        INTEGER = 'integer'
+        STRING = 'string'
+        REAL = 'real'
+        NONE = 'none'
+        
     
     TYPE = {
         'RESERVED' : 'reserved',
@@ -231,7 +254,6 @@ class Variable(Type):
         :param value: The value of the variable
         :type value: str
         """
-        
         if identifier is None:
             print("[Error] the argument 'identifier' cannot be 'None'")
             raise ValueError
@@ -257,6 +279,8 @@ class List(Type):
     A list contains the references of its variables.
     """
     
+    type = SymbolTypes.LIST
+    
     def __init__(self, identifier, variables):
         """
         Initializes the *List* object.
@@ -267,7 +291,6 @@ class List(Type):
         :param variables: the list of references of variables
         :type variables: list
         """
-        
         self.identifier = identifier
         self.variables = variables
 
@@ -276,6 +299,8 @@ class Packet(Type):
     """
     Models a packet.
     """
+    
+    type = SymbolTypes.PACKET
 
     def __init__(self, identifier):
         """
@@ -284,11 +309,10 @@ class Packet(Type):
         :param identifier: the identifier of the list
         :type identifier: str
         """
-        
         self.identifier = identifier
     
 
-
+# TODO refactor the class name
 class PacketFilterElement(Type):
     """
     Models the packet filter basic element. It contains:
@@ -310,17 +334,18 @@ class PacketFilterElement(Type):
         :param right_operand: the identifier of the right operand
         :type right_operand: str
         """
-        
         self.left_operand = left_operand
         self.comparison_operator = comparison_operator
         self.right_operand = right_operand
 
-
+# TODO remove, replaced by Filter
 class PacketFilter(Type):
     """
     Models the packet filter, i.e. the conditional statement inside a conditional attack. 
     It contains a list of *FilterElement*s stored in RPN order.
     """
+    
+    type = SymbolTypes.FILTER
     
     def __init__(self, identifier, rpn):
         """
@@ -332,7 +357,35 @@ class PacketFilter(Type):
         :param rpn: the list of *FilterElements* stored in RPN order
         :type rpn: list
         """
-        
         self.identifier = identifier
         self.rpn = copy.deepcopy(rpn)
+        
+
+# XXX new filter class
+class Filter(Type):
+    """
+    Models the packet filter. 
+    
+    :param type: the type
+    :type type: model.types.SymbolTypes
+    """
+    
+    type = SymbolTypes.FILTER
+    
+    def __init__(self, identifier, value):
+        """
+        Initializes the *Filter* object. It stores its list of operands and 
+        operators in RPN order.
+        
+        :param self: the reference to the instance
+        :type self: model.types.Filter
+        
+        :param identifier: the identifier
+        :type identifier: str
+        
+        :param value: the list of elements composing the filter
+        :type value: list
+        """
+        self.identifier = identifier
+        self.value = copy.deepcopy(value)
 
