@@ -349,6 +349,8 @@ class SymbolTable(Support):
             raise ValueError(self.__error("identifier cannot be empty"))
         if type is None:
             raise ValueError(self.__error("type cannot be None"))
+        if type not in adltypes.SymbolTypes:
+            raise TypeError(self.__error("type " + type + " not recognized"))
 
         # Checks if the identifier already exists
         if identifier in self.identifier_type_dict:
@@ -370,8 +372,7 @@ class SymbolTable(Support):
         # Builds an empty adltypes.LIST
         elif type == adltypes.SymbolTypes.LIST:
             obj = adltypes.List(identifier, None)
-        else:
-            raise TypeError(self.__error("type " + type + " not recognized"))
+
         # Stores the object into the symbol table
         self.identifier_object_dict[identifier] = copy.deepcopy(obj)
         return True
