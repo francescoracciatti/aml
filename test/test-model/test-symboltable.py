@@ -18,18 +18,17 @@ class TestSymbolTable(unittest.TestCase):
         """
         Sets up a symbol table.
         """        
+        # Makes the SymbolTable not verbose
+        SymbolTable.verbose = False
+        # Builds a symbol table 
         self.symboltable = SymbolTable(0)
+        self.assertTrue(self.symboltable.empty())
 
     def tearDown(self):
         """
         Tears down the test class.
         """
         self.symboltable.clear()
-
-    def test_empty(self):
-        """
-        Tests if an empty symbol table is empty.
-        """
         self.assertTrue(self.symboltable.empty())
 
     def test_not_exists(self):
@@ -435,24 +434,63 @@ class TestSymbolTable(unittest.TestCase):
     @patch('model.types.List')
     def test_clear(self, mock_variable, mock_packet, mock_filter, mock_list):
         """
-        Tests the symbol table clearing.
+        Tests the method *SymbolTable::clear*
         """
         identifier = 'var'
         self.symboltable.declare(identifier, SymbolTypes.VARIABLE)
-
         identifier = 'pkt'
         self.symboltable.declare(identifier, SymbolTypes.PACKET)
-    
         identifier = 'flt'
         self.symboltable.declare(identifier, SymbolTypes.FILTER)
-        
         identifier = 'lst'    
         self.symboltable.declare(identifier, SymbolTypes.LIST)
-
         self.symboltable.clear()
+        self.assertTrue(self.symboltable.empty())
         self.assertTrue(not any(self.symboltable.identifier_type_dict))
         self.assertTrue(not any(self.symboltable.identifier_object_dict))
+        
+        
+    @patch('model.types.Variable')
+    @patch('model.types.Packet')
+    @patch('model.types.Filter')
+    @patch('model.types.List')
+    def test_empty(self, mock_variable, mock_packet, mock_filter, mock_list):
+        """
+        Tests if an empty symbol table is empty.
+        """
+        self.assertTrue(not any(self.symboltable.identifier_type_dict))
+        self.assertTrue(not any(self.symboltable.identifier_object_dict))
+        self.assertTrue(self.symboltable.empty())
+        identifier = 'var'
+        self.symboltable.declare(identifier, SymbolTypes.VARIABLE)
+        identifier = 'pkt'
+        self.symboltable.declare(identifier, SymbolTypes.PACKET)
+        identifier = 'flt'
+        self.symboltable.declare(identifier, SymbolTypes.FILTER)
+        identifier = 'lst'    
+        self.assertTrue(any(self.symboltable.identifier_type_dict))
+        self.assertTrue(any(self.symboltable.identifier_object_dict))
+        self.assertFalse(self.symboltable.empty())
 
+    @patch('model.types.Variable')
+    @patch('model.types.Packet')
+    @patch('model.types.Filter')
+    @patch('model.types.List')
+    def test_clear(self, mock_variable, mock_packet, mock_filter, mock_list):
+        """
+        Tests the method *SymbolTable::clear*
+        """
+        identifier = 'var'
+        self.symboltable.declare(identifier, SymbolTypes.VARIABLE)
+        identifier = 'pkt'
+        self.symboltable.declare(identifier, SymbolTypes.PACKET)
+        identifier = 'flt'
+        self.symboltable.declare(identifier, SymbolTypes.FILTER)
+        identifier = 'lst'    
+        self.symboltable.declare(identifier, SymbolTypes.LIST)
+        self.symboltable.clear()
+        self.assertTrue(self.symboltable.empty())
+    
     
 if __name__ == '__main__':
     unittest.main()

@@ -34,7 +34,7 @@ class SymbolHandler(Support):
     :type verbose: bool
     """
     
-    verbose = False
+    verbose = True
     
     def __init__(self):
         """
@@ -129,7 +129,7 @@ class SymbolHandler(Support):
         """
         # Checks if a symbol table exists for the given scope
         if scope not in self.scope_symboltable_dict:
-            msg = self.__info("The scope " + scope + " does not refer any symbol table")
+            msg = self.__info("The scope " + str(scope) + " does not refer any symbol table")
             self.__log(msg)
             return False
         # Defines the object into the given scope
@@ -148,7 +148,7 @@ class SymbolHandler(Support):
         :return: the symbol table if it exists, otherwise *None*
         """
         if scope not in self.scope_symboltable_dict:
-            msg = self.__info("The scope " + scope + " does not refer any symbol table")
+            msg = self.__info("The scope " + str(scope) + " does not refer any symbol table")
             self.__log(msg)
             return False
         self.scope_symboltable_dict[scope].clear()
@@ -167,7 +167,7 @@ class SymbolHandler(Support):
         # Scans all the scopes
         for scope in list(self.scope_symboltable_dict.keys()):
             if self.scope_symboltable_dict[scope].exist(identifier):
-                msg = self.__info(identifier + " already exists inside the scope " + scope)
+                msg = self.__info(identifier + " already exists inside the scope " + str(scope))
                 self.__log(msg)
                 return True
         return False
@@ -248,7 +248,7 @@ class SymbolTable(Support):
     :type verbose: bool
     """
     
-    verbose = False
+    verbose = True
     
     def __init__(self, scope):
         """
