@@ -11,9 +11,40 @@ import enum
 
 def reserved():
     """
-    Builds the dictionary of the ADL reserved keywords.
+    Builds the list of the reserved keywords.
+    
+    :return: the list of the reserved keywords
+    """
+    reserved = []
+    reserved += Type.reserved()
+    reserved += Primitive.reserved() 
+    reserved += Statement.reserved()
+    reserved += Accessor.reserved() 
+    reserved += WellKnown.reserved()
+    return reserved
 
-    :return: the dictionary of the ADL reserved keywords
+
+def tokens():
+    """
+    Builds the list of the tokens.
+    
+    :return: the list of the tokens
+    """
+    tokens = []
+    tokens += Type.tokens()
+    tokens += Primitive.tokens() 
+    tokens += Statement.tokens()
+    tokens += Accessor.tokens() 
+    tokens += WellKnown.tokens()
+    return tokens
+
+
+def dictionary():
+    """
+    Builds the dictionary of the ADL keywords.
+    It binds each reserved keyword with its token.
+    
+    :return: the dictionary of the ADL keywords
     """
     return {
         **Type.dictionary(),
@@ -33,7 +64,25 @@ class Type(enum.Enum):
     PACKET = 'packet'
     FILTER = 'filter'
     LIST = 'list'
-
+    
+    @classmethod
+    def reserved(cls):
+        """
+        Builds the list of the reserved keywords.
+        
+        :return: the list of the reserved keywords
+        """
+        return _reserved(cls)
+        
+    @classmethod
+    def tokens(cls):
+        """
+        Builds the list of the tokens.
+        
+        :return: the list of the tokens
+        """
+        return _tokens(cls)
+    
     @classmethod
     def dictionary(cls):
         """
@@ -42,8 +91,8 @@ class Type(enum.Enum):
         :return: the dictionary that represents the class
         """
         return _dictionary(cls)
-    
-    
+
+
 @enum.unique
 class Primitive(enum.Enum):
     """
@@ -67,6 +116,24 @@ class Primitive(enum.Enum):
     DROPPACKET = 'dropPacket'
 
     @classmethod
+    def reserved(cls):
+        """
+        Builds the list of the reserved keywords.
+        
+        :return: the list of the reserved keywords
+        """
+        return _reserved(cls)
+        
+    @classmethod
+    def tokens(cls):
+        """
+        Builds the list of the tokens.
+        
+        :return: the list of the tokens
+        """
+        return _tokens(cls)
+    
+    @classmethod
     def dictionary(cls):
         """
         Builds the dictionary that represents the class.
@@ -89,6 +156,24 @@ class Statement(enum.Enum):
     ONCE = 'once'
 
     @classmethod
+    def reserved(cls):
+        """
+        Builds the list of the reserved keywords.
+        
+        :return: the list of the reserved keywords
+        """
+        return _reserved(cls)
+        
+    @classmethod
+    def tokens(cls):
+        """
+        Builds the list of the tokens.
+        
+        :return: the list of the tokens
+        """
+        return _tokens(cls)
+    
+    @classmethod
     def dictionary(cls):
         """
         Builds the dictionary that represents the class.
@@ -107,6 +192,24 @@ class Accessor(enum.Enum):
     FOR = 'for'
     IN = 'in'
 
+    @classmethod
+    def reserved(cls):
+        """
+        Builds the list of the reserved keywords.
+        
+        :return: the list of the reserved keywords
+        """
+        return _reserved(cls)
+        
+    @classmethod
+    def tokens(cls):
+        """
+        Builds the list of the tokens.
+        
+        :return: the list of the tokens
+        """
+        return _tokens(cls)
+    
     @classmethod
     def dictionary(cls):
         """
@@ -131,6 +234,24 @@ class WellKnown(enum.Enum):
     S = 's'
     
     @classmethod
+    def reserved(cls):
+        """
+        Builds the list of the reserved keywords.
+        
+        :return: the list of the reserved keywords
+        """
+        return _reserved(cls)
+        
+    @classmethod
+    def tokens(cls):
+        """
+        Builds the list of the tokens.
+        
+        :return: the list of the tokens
+        """
+        return _tokens(cls)
+    
+    @classmethod
     def dictionary(cls):
         """
         Builds the dictionary that represents the class.
@@ -140,16 +261,46 @@ class WellKnown(enum.Enum):
         return _dictionary(cls)
 
 
+def _reserved(cls):
+    """
+    Builds the list of the reserved keywords of an enum.Enum class.
+        
+    :return: the list of the reserved keywords
+    """
+    if not isinstance(cls, enum.EnumMeta):
+        raise TypeError(str(cls.__class__.__name__) + " not supported")
+    reserved = []
+    for e in cls:
+        reserved.append(e.value)
+    return reserved
+
+
+def _tokens(cls):
+    """
+    Builds the list of the tokens of an enum.Enum class.
+        
+    :return: the list of the reserved keywords
+    """
+    if not isinstance(cls, enum.EnumMeta):
+        raise TypeError(str(cls.__class__.__name__) + " not supported")
+    tokens = []
+    for e in cls:
+        tokens.append(e.name)
+    return tokens
+
+
 def _dictionary(cls):
     """
-    Builds the dictionary of an enum.Enum class.
-    For each enum in the class (derived from enum.Enum) it 
-    uses its value as a dict's key and its name as a dict's value.
+    Builds the dictionary mapping the reserved keywords with the releated tokens 
+    of an enum.Enum class.
     
-    :returns: the dictionary representing the class
+    :returns: the dictionary mapping the reserved keywords with the releated tokens
     """
-    dic = {}
-    for entry in cls:
-       dic[entry.value] = entry.name
-    return dic
-
+    if not isinstance(cls, enum.EnumMeta):
+        raise TypeError(str(cls.__class__.__name__) + " not supported")
+    dictionary = {}
+    for e in cls:
+       dictionary[e.value] = e.name
+    return dictionary
+    
+    

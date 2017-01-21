@@ -11,10 +11,10 @@ import ply.lex as lex
 
 
 # Dict of the reserved keywords
-reserved = keywords.reserved()
+reserved = keywords.dictionary()
 
 # List of the tokens
-tokens = list(reserved.values()) + [
+tokens = keywords.tokens() + [
     # Compound assignment operators
     'ADDASSIGN',
     'SUBASSIGN',
