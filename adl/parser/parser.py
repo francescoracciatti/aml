@@ -657,8 +657,8 @@ def p_comparison_operator(p):
 # Grammar rule for the logical operator in the packet filter
 def p_logical_operator(p):
     """
-    logical_operator : AND
-                     | OR
+    logical_operator : LAND
+                     | LOR
     """
     value = str(p[1])
     # Prepend the prefix for the reserved keyword
@@ -1447,8 +1447,8 @@ def p_expression_identifier(p):
 # Error section containing the grammar rules to support errors handling.
 # -----------------------------------------------------------------------------
 
+# FIXME it does not work
 # Generic error handler
 def p_error(p):
-    tok = adllexer.token()
+    tok = adllexer.tokens()
     print("[Error] wrong syntax - line " + str(tok.lineno) + " " + str(tok))
-
