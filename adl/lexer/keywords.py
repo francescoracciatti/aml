@@ -39,19 +39,33 @@ def tokens():
     return tokens
 
 
-def dictionary():
+def view():
     """
     Builds the dictionary of the ADL keywords.
-    It binds each reserved keyword with its token.
     
     :return: the dictionary of the ADL keywords
     """
     return {
-        **Type.dictionary(),
-        **Primitive.dictionary(),
-        **Statement.dictionary(),
-        **Accessor.dictionary(),
-        **WellKnown.dictionary()
+        **Type.view(),
+        **Primitive.view(),
+        **Statement.view(),
+        **Accessor.view(),
+        **WellKnown.view()
+    }
+
+
+def rview():
+    """
+    Builds the reverse dictionary of the ADL keywords.
+    
+    :return: the reverse dictionary of the ADL keywords
+    """
+    return {
+        **Type.rview(),
+        **Primitive.rview(),
+        **Statement.rview(),
+        **Accessor.rview(),
+        **WellKnown.rview()
     }
 
 
@@ -84,13 +98,24 @@ class Type(enum.Enum):
         return _tokens(cls)
     
     @classmethod
-    def dictionary(cls):
+    def view(cls):
         """
         Builds the dictionary that represents the class.
 
         :return: the dictionary that represents the class
         """
-        return _dictionary(cls)
+        return _view(cls)
+
+
+    @classmethod
+    def rview(cls):
+        """
+        Builds the reverse dictionary that represents the class.
+
+        :return: the reverse dictionary that represents the class
+        """
+        return _rview(cls)
+
 
 
 @enum.unique
@@ -134,13 +159,23 @@ class Primitive(enum.Enum):
         return _tokens(cls)
     
     @classmethod
-    def dictionary(cls):
+    def view(cls):
         """
         Builds the dictionary that represents the class.
 
         :return: the dictionary that represents the class
         """
-        return _dictionary(cls)
+        return _view(cls)
+
+
+    @classmethod
+    def rview(cls):
+        """
+        Builds the reverse dictionary that represents the class.
+
+        :return: the reverse dictionary that represents the class
+        """
+        return _rview(cls)
 
 
 @enum.unique
@@ -174,13 +209,23 @@ class Statement(enum.Enum):
         return _tokens(cls)
     
     @classmethod
-    def dictionary(cls):
+    def view(cls):
         """
         Builds the dictionary that represents the class.
 
         :return: the dictionary that represents the class
         """
-        return _dictionary(cls)
+        return _view(cls)
+
+
+    @classmethod
+    def rview(cls):
+        """
+        Builds the reverse dictionary that represents the class.
+
+        :return: the reverse dictionary that represents the class
+        """
+        return _rview(cls)
 
 
 @enum.unique
@@ -211,13 +256,23 @@ class Accessor(enum.Enum):
         return _tokens(cls)
     
     @classmethod
-    def dictionary(cls):
+    def view(cls):
         """
         Builds the dictionary that represents the class.
 
         :return: the dictionary that represents the class
         """
-        return _dictionary(cls)
+        return _view(cls)
+
+
+    @classmethod
+    def rview(cls):
+        """
+        Builds the reverse dictionary that represents the class.
+
+        :return: the reverse dictionary that represents the class
+        """
+        return _rview(cls)
 
 
 @enum.unique    
@@ -252,13 +307,23 @@ class WellKnown(enum.Enum):
         return _tokens(cls)
     
     @classmethod
-    def dictionary(cls):
+    def view(cls):
         """
         Builds the dictionary that represents the class.
 
         :return: the dictionary that represents the class
         """
-        return _dictionary(cls)
+        return _view(cls)
+
+
+    @classmethod
+    def rview(cls):
+        """
+        Builds the reverse dictionary that represents the class.
+
+        :return: the reverse dictionary that represents the class
+        """
+        return _rview(cls)
 
 
 def _reserved(cls):
@@ -277,7 +342,7 @@ def _reserved(cls):
 
 def _tokens(cls):
     """
-    Builds the list of the tokens of an enum.Enum class.
+    Builds the list of the names of an enum.Enum class.
         
     :return: the list of the reserved keywords
     """
@@ -289,18 +354,31 @@ def _tokens(cls):
     return tokens
 
 
-def _dictionary(cls):
+def _view(cls):
     """
-    Builds the dictionary mapping the reserved keywords with the releated tokens 
-    of an enum.Enum class.
+    Builds the dictionary mapping the names with the related values of an enum.Enum class. 
     
     :returns: the dictionary mapping the reserved keywords with the releated tokens
     """
     if not isinstance(cls, enum.EnumMeta):
         raise TypeError(str(cls.__class__.__name__) + " not supported")
-    dictionary = {}
+    view = {}
     for e in cls:
-       dictionary[e.value] = e.name
-    return dictionary
+       view[e.name] = e.value
+    return view
+
+
+def _rview(cls):
+    """
+    Builds the reverse dictionary mapping the names with the related values of an enum.Enum class. 
+    
+    :returns: the dictionary mapping the reserved keywords with the releated tokens
+    """
+    if not isinstance(cls, enum.EnumMeta):
+        raise TypeError(str(cls.__class__.__name__) + " not supported")
+    rview = {}
+    for e in cls:
+       rview[e.value] = e.name
+    return rview
     
     

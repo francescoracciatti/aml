@@ -3,18 +3,28 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the ADL lexer.
+# This module contains the lexer.
 # -----------------------------------------------------------------------------
 
-import lexer.keywords as keywords
+import lexer.keywords as adlkeywords
 import ply.lex as lex
 
 
-# Dict of the reserved keywords
-reserved = keywords.dictionary()
+# Dict of the ADL reserved keywords
+reserved = adlkeywords.rview()
 
-# List of the tokens
-tokens = keywords.tokens() + [
+# Tuple of generic language operands
+operands = (
+    # Basic yypes
+    'STRING',
+    'REAL',
+    'INTEGER',
+    # Identifiers
+    'IDENTIFIER',
+)
+
+# Tuple of generic language operators and operators
+operators = (
     # Compound assignment operators
     'ADDASSIGN',
     'SUBASSIGN',
@@ -48,14 +58,11 @@ tokens = keywords.tokens() + [
     'LCURVY',
     'RCURVY',
     'COMMA',
-    # Types
-    'STRING',
-    'REAL',
-    'INTEGER',
-    # Identifiers
-    'IDENTIFIER',
-]
- 
+)
+
+# List of the tokens
+tokens = adlkeywords.tokens() + list(operands) + list(operators)
+
 # Regex rules for compound assignment operators
 t_ADDASSIGN = r'\+='
 t_SUBASSIGN = r'-='

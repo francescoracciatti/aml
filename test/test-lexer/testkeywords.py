@@ -38,8 +38,13 @@ class TestKeywords(unittest.TestCase):
             return keywords._tokens(cls)
     
         @classmethod
-        def dictionary(cls):
-            return keywords._dictionary(cls)
+        def view(cls):
+            return keywords._view(cls)
+            
+        @classmethod
+        def rview(cls):
+            return keywords._rview(cls)
+    
     
     def setUp(self):
         """
@@ -48,14 +53,17 @@ class TestKeywords(unittest.TestCase):
         # Builds the expected structures
         self.reserved = []
         self.tokens = []
-        self.dictionary = {}
+        self.view = {}
+        self.rview = {}
         for e in self.TestEnum:
             # Builds reserved
             self.reserved.append(e.value)
             # Builds tokens
             self.tokens.append(e.name)
-            # Builds dictionary
-            self.dictionary[e.value] = e.name
+            # Builds view
+            self.view[e.name] = e.value
+            # Builds rview
+            self.rview[e.value] = e.name
         
         
     def tearDown(self):
@@ -64,7 +72,8 @@ class TestKeywords(unittest.TestCase):
         """
         del self.reserved[:]
         del self.tokens[:]
-        self.dictionary.clear()
+        self.view.clear()
+        self.rview.clear()
 
 
     def test_method__reserved(self):
@@ -81,11 +90,19 @@ class TestKeywords(unittest.TestCase):
         self.assertListEqual(self.TestEnum.tokens(), self.tokens)
 
 
-    def test_method__dictionary(self):
+    def test_method__view(self):
         """
-        Tests the method _dictionary()
+        Tests the method _view()
         """
-        self.assertDictEqual(self.TestEnum.dictionary(), self.dictionary)
+        self.assertDictEqual(self.TestEnum.view(), self.view)
+
+
+    def test_method__rview(self):
+        """
+        Tests the method _rview()
+        """
+        self.assertDictEqual(self.TestEnum.rview(), self.rview)
+
 
 
 if __name__ == '__main__':
