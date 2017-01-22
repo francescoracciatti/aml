@@ -6,12 +6,12 @@
 # This module contains the lexer.
 # -----------------------------------------------------------------------------
 
-import lexer.keywords as adlkeywords
+import lexer.keywords as keywords
 import ply.lex as lex
 
 
 # Dict of the ADL reserved keywords
-reserved = adlkeywords.rview()
+reserved = keywords.rview()
 
 # Tuple of generic language operands
 operands = (
@@ -61,7 +61,7 @@ operators = (
 )
 
 # List of the tokens
-tokens = adlkeywords.tokens() + list(operands) + list(operators)
+tokens = keywords.tokens() + list(operands) + list(operators)
 
 # Regex rules for compound assignment operators
 t_ADDASSIGN = r'\+='
