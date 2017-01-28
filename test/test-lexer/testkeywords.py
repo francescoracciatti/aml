@@ -47,7 +47,6 @@ class TestKeywords(unittest.TestCase):
         @classmethod
         def rview(cls):
             return keywords._rview(cls)
-
     
     def setUp(self):
         """
