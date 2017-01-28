@@ -9,19 +9,19 @@
 import enum
 
 
-def reserved():
+def keywords():
     """
-    Builds the list of the reserved keywords.
+    Builds the list of the keywords.
     
-    :return: the list of the reserved keywords
+    :return: the list of the keywords.
     """
-    reserved = []
-    reserved += Type.reserved()
-    reserved += Primitive.reserved() 
-    reserved += Statement.reserved()
-    reserved += Accessor.reserved() 
-    reserved += WellKnown.reserved()
-    return reserved
+    keywords = []
+    keywords += Type.keywords()
+    keywords += Primitive.keywords() 
+    keywords += Statement.keywords()
+    keywords += Accessor.keywords() 
+    keywords += WellKnown.keywords()
+    return keywords
 
 
 def tokens():
@@ -80,13 +80,13 @@ class Type(enum.Enum):
     LIST = 'list'
     
     @classmethod
-    def reserved(cls):
+    def keywords(cls):
         """
-        Builds the list of the reserved keywords.
+        Builds the list of the keywords.
         
-        :return: the list of the reserved keywords
+        :return: the list of the keywords
         """
-        return _reserved(cls)
+        return _keywords(cls)
         
     @classmethod
     def tokens(cls):
@@ -106,7 +106,6 @@ class Type(enum.Enum):
         """
         return _view(cls)
 
-
     @classmethod
     def rview(cls):
         """
@@ -115,8 +114,6 @@ class Type(enum.Enum):
         :return: the reverse dictionary that represents the class
         """
         return _rview(cls)
-
-
 
 @enum.unique
 class Primitive(enum.Enum):
@@ -141,13 +138,13 @@ class Primitive(enum.Enum):
     DROPPACKET = 'dropPacket'
 
     @classmethod
-    def reserved(cls):
+    def keywords(cls):
         """
-        Builds the list of the reserved keywords.
+        Builds the list of the keywords.
         
-        :return: the list of the reserved keywords
+        :return: the list of the keywords
         """
-        return _reserved(cls)
+        return _keywords(cls)
         
     @classmethod
     def tokens(cls):
@@ -166,7 +163,6 @@ class Primitive(enum.Enum):
         :return: the dictionary that represents the class
         """
         return _view(cls)
-
 
     @classmethod
     def rview(cls):
@@ -191,13 +187,13 @@ class Statement(enum.Enum):
     ONCE = 'once'
 
     @classmethod
-    def reserved(cls):
+    def keywords(cls):
         """
-        Builds the list of the reserved keywords.
+        Builds the list of the keywords.
         
-        :return: the list of the reserved keywords
+        :return: the list of the keywords
         """
-        return _reserved(cls)
+        return _keywords(cls)
         
     @classmethod
     def tokens(cls):
@@ -216,7 +212,6 @@ class Statement(enum.Enum):
         :return: the dictionary that represents the class
         """
         return _view(cls)
-
 
     @classmethod
     def rview(cls):
@@ -238,13 +233,13 @@ class Accessor(enum.Enum):
     IN = 'in'
 
     @classmethod
-    def reserved(cls):
+    def keywords(cls):
         """
-        Builds the list of the reserved keywords.
+        Builds the list of the keywords.
         
-        :return: the list of the reserved keywords
+        :return: the list of the keywords
         """
-        return _reserved(cls)
+        return _keywords(cls)
         
     @classmethod
     def tokens(cls):
@@ -263,7 +258,6 @@ class Accessor(enum.Enum):
         :return: the dictionary that represents the class
         """
         return _view(cls)
-
 
     @classmethod
     def rview(cls):
@@ -289,13 +283,13 @@ class WellKnown(enum.Enum):
     S = 's'
     
     @classmethod
-    def reserved(cls):
+    def keywords(cls):
         """
-        Builds the list of the reserved keywords.
+        Builds the list of the keywords.
         
-        :return: the list of the reserved keywords
+        :return: the list of the keywords
         """
-        return _reserved(cls)
+        return _keywords(cls)
         
     @classmethod
     def tokens(cls):
@@ -315,7 +309,6 @@ class WellKnown(enum.Enum):
         """
         return _view(cls)
 
-
     @classmethod
     def rview(cls):
         """
@@ -326,25 +319,25 @@ class WellKnown(enum.Enum):
         return _rview(cls)
 
 
-def _reserved(cls):
+def _keywords(cls):
     """
-    Builds the list of the reserved keywords of an enum.Enum class.
+    Builds the list of the values of an enum.Enum class.
         
-    :return: the list of the reserved keywords
+    :return: the list of the values
     """
     if not isinstance(cls, enum.EnumMeta):
         raise TypeError(str(cls.__class__.__name__) + " not supported")
-    reserved = []
+    keywords = []
     for e in cls:
-        reserved.append(e.value)
-    return reserved
+        keywords.append(e.value)
+    return keywords
 
 
 def _tokens(cls):
     """
     Builds the list of the names of an enum.Enum class.
         
-    :return: the list of the reserved keywords
+    :return: the list of the names
     """
     if not isinstance(cls, enum.EnumMeta):
         raise TypeError(str(cls.__class__.__name__) + " not supported")
@@ -358,7 +351,7 @@ def _view(cls):
     """
     Builds the dictionary mapping the names with the related values of an enum.Enum class. 
     
-    :returns: the dictionary mapping the reserved keywords with the releated tokens
+    :returns: the dictionary mapping the keywords with the releated tokens
     """
     if not isinstance(cls, enum.EnumMeta):
         raise TypeError(str(cls.__class__.__name__) + " not supported")
@@ -372,7 +365,7 @@ def _rview(cls):
     """
     Builds the reverse dictionary mapping the names with the related values of an enum.Enum class. 
     
-    :returns: the dictionary mapping the reserved keywords with the releated tokens
+    :returns: the dictionary mapping the keywords with the releated tokens
     """
     if not isinstance(cls, enum.EnumMeta):
         raise TypeError(str(cls.__class__.__name__) + " not supported")

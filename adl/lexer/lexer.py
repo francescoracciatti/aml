@@ -6,24 +6,98 @@
 # This module contains the lexer.
 # -----------------------------------------------------------------------------
 
-import lexer.keywords as adlkeywords
+import enum
+import lexer.keywords as keywords
 import ply.lex as lex
 
 
-# Dict of the ADL reserved keywords
-reserved = adlkeywords.rview()
+@enum.unique
+class BasicSymbol(enum.Enum):
+    """
+    The types for basic symbols.
+    """
+    OPERATOR = 'operator'
+    OPERAND = 'operand'
 
-# Tuple of generic language operands
+
+@enum.unique
+class BasicOperandType(enum.Enum):
+    """
+    The types for basic operand.
+    """
+    IDENTIFIER = 'identifier'
+    INTEGER = 'integer'
+    STRING = 'string'
+    REAL = 'real'
+    
+    @classmethod
+    def tokens(cls):
+        return _tokens(cls)
+
+
+@enum.unique
+class BasicOperatorType(enum.Enum):
+    """
+    The types for basic operators.
+    """
+    ADDASSIGN = '+='
+    SUBASSIGN = '-='
+    MULASSIGN = '*='
+    DIVASSIGN = '/='
+    MODASSIGN = '%='
+    # Comparison operators
+    NOTEQUALTO = '!='
+    EQUALTO = '=='
+    GREQTHN = '>='
+    LSEQTHN = '<='
+    GRTHN = '>'
+    LSTHN = '<'
+    # Basic assignment operator
+    ASSIGN = '='
+    # Basic operators
+    ADD = '+'
+    SUB = '-'
+    MUL = '*'
+    DIV = '/'
+    MOD = '%'
+    EXP = '**'
+    # Logical operators
+    LAND = '&&'
+    LOR = '||'
+    # Punctuation
+    LROUND = '('
+    RROUND = ')'
+    LBRACK = '['
+    RBRACK = ']'
+    LCURVY = '{'
+    RCURVY = '}'
+    COMMA = ','
+
+    @classmethod
+    def tokens(cls):
+        return _tokens(cls)
+
+def _tokens(cls):
+    """
+    Builds the list of the names of an enum.Enum class.
+    """
+    tokens = []
+    for e in cls:
+        tokens.append(e.name)
+    return tokens
+
+
+# Tuple of basic operands
 operands = (
-    # Basic yypes
+    # The base types
     'STRING',
     'REAL',
     'INTEGER',
-    # Identifiers
+    # The identifiers
     'IDENTIFIER',
 )
 
-# Tuple of generic language operators and operators
+# Tuple of basic operators
 operators = (
     # Compound assignment operators
     'ADDASSIGN',
@@ -60,8 +134,13 @@ operators = (
     'COMMA',
 )
 
-# List of the tokens
-tokens = adlkeywords.tokens() + list(operands) + list(operators)
+# TODO make it a tuple
+# The list of the ADL tokens
+tokens = BasicOperatorType.tokens() + BasicOperandType.tokens() + keywords.tokens()
+
+# TODO remove if it is possible or change name
+# The dict of the ADL reserved keywords
+reserved = keywords.rview()
 
 # Regex rules for compound assignment operators
 t_ADDASSIGN = r'\+='
