@@ -6,6 +6,9 @@
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
 # This module tests the ADL keywords.
+#
+# Usage: 
+# $ python3 -m unittest -v testkeywords.py
 # -----------------------------------------------------------------------------
 
 import sys
@@ -30,49 +33,55 @@ class TestKeywords(unittest.TestCase):
         ENUM4 = 'enum4'
     
         @classmethod
-        def reserved(cls):
-            return keywords._reserved(cls)
+        def keywords(cls):
+            return keywords._keywords(cls)
     
         @classmethod
         def tokens(cls):
             return keywords._tokens(cls)
     
         @classmethod
-        def dictionary(cls):
-            return keywords._dictionary(cls)
+        def view(cls):
+            return keywords._view(cls)
+            
+        @classmethod
+        def rview(cls):
+            return keywords._rview(cls)
+
     
     def setUp(self):
         """
         Sets up the test.
         """        
         # Builds the expected structures
-        self.reserved = []
+        self.keywords = []
         self.tokens = []
-        self.dictionary = {}
+        self.view = {}
+        self.rview = {}
         for e in self.TestEnum:
-            # Builds reserved
-            self.reserved.append(e.value)
+            # Builds keywords
+            self.keywords.append(e.value)
             # Builds tokens
             self.tokens.append(e.name)
-            # Builds dictionary
-            self.dictionary[e.value] = e.name
-        
+            # Builds view
+            self.view[e.name] = e.value
+            # Builds rview
+            self.rview[e.value] = e.name
         
     def tearDown(self):
         """
         Tears down the test.
         """
-        del self.reserved[:]
+        del self.keywords[:]
         del self.tokens[:]
-        self.dictionary.clear()
+        self.view.clear()
+        self.rview.clear()
 
-
-    def test_method__reserved(self):
+    def test_method__keywords(self):
         """
-        Tests the method _reserved()
+        Tests the method _keywords()
         """
-        self.assertListEqual(self.TestEnum.reserved(), self.reserved)
-    
+        self.assertListEqual(self.TestEnum.keywords(), self.keywords)
     
     def test_method__tokens(self):
         """
@@ -80,12 +89,17 @@ class TestKeywords(unittest.TestCase):
         """
         self.assertListEqual(self.TestEnum.tokens(), self.tokens)
 
+    def test_method__view(self):
+        """
+        Tests the method _view()
+        """
+        self.assertDictEqual(self.TestEnum.view(), self.view)
 
-    def test_method__dictionary(self):
+    def test_method__view(self):
         """
-        Tests the method _dictionary()
+        Tests the method _rview()
         """
-        self.assertDictEqual(self.TestEnum.dictionary(), self.dictionary)
+        self.assertDictEqual(self.TestEnum.rview(), self.rview)
 
 
 if __name__ == '__main__':
