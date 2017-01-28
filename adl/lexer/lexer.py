@@ -87,8 +87,6 @@ def _tokens(cls):
     return tokens
 
 
-
-
 # Tuple of basic operands
 operands = (
     # The base types

@@ -115,7 +115,6 @@ class Type(enum.Enum):
         """
         return _rview(cls)
 
-
 @enum.unique
 class Primitive(enum.Enum):
     """
