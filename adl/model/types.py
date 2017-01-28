@@ -3,389 +3,518 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the model of the ADL types.
+# This module contains the mechanism for handling the ADL types.
 # -----------------------------------------------------------------------------
 
-from abc import ABCMeta, abstractmethod
+import abc
 import copy
 import enum
-
-@enum.unique
-class SymbolTypes(enum.Enum):
-    """
-    The ADL types supported by the symbol table.
-    """
-    VARIABLE = 'variable'
-    PACKET = 'packet'
-    FILTER = 'filter'
-    LIST = 'list'
+import lexer.lexer as lexer
+import lexer.keywords as keywords
 
 
-class Type(metaclass=ABCMeta):
+# TODO embed into Symbol
+def _tuples():
+        """
+        Builds the types of an enum.Enum class.
+        """
+        tuples = list(keywords.Type.view().items())
+        tuples.append((lexer.BasicSymbol.OPERATOR.name, lexer.BasicSymbol.OPERATOR.value))
+        return tuples
+
+
+class Symbol(metaclass=abc.ABCMeta):
     """
-    Models an abstract type.
-    """
+    Abstract base class to build up symbols.
     
-    @abstractmethod
+    :param __prefix: the prefix used to build the reserved identifier
+    :type __prefix: str
+    """
+
+    # The symbol types
+    Type = enum.Enum('Type', _tuples())
+
+    # The prefix for name mangling
+    __prefix = '__'
+
+    @abc.abstractmethod
     def __init__(self, *args):
         pass
 
-# TODO remove
-# to be replaced with module.support.SymbolTable
-class SymbolTable(Type):
+
+class Operator(Symbol):
     """
-    Models a symbol table.
-    """
-    
-    # Types supported by the symbol table
-    TYPE = {
-        'VARIABLE' : 'variable',
-        'FILTER' : 'filter',
-        'PACKET' : 'packet',
-        'LIST' : 'list',
-    }
-    
-    def __init__(self, level):
-        """
-        Initializes the *SymbolTable* object.
-        
-        :param level: the scope level of the symbol table
-        :type level: int
-        
-        :param types: the dictionary binding each identifier with its type
-        :type types: dict
-        
-        :param variables: the dictionary binding each identifier 
-                          with its variable
-        :type values: dict
+    Container for operators.
 
-        :param lists: the dictionary binding each identifier with its value
-        :type lists: dict
-        """
-        if level < 0:
-            print("[Error] the scope level of a symbol table cannot be less than 0")
-            raise ValueError
-        self.level = level
-        self.types = {}
-        self.variables = {}
-        self.filters = {}
-        self.packets = {}
-        self.lists = {}
-
-    
-    def empty(self):
-        return any(self.types) 
-    
-    
-    def declare(self, identifier, type):
-        """
-        Declares the given type having the given identifier.
-        
-        :param identifier: the identifier to be declared
-        :type identifier: str
-        
-        :param type: the type of the identifier
-        :type type: str
-        
-        :raise: ValueError
-        """
-        if identifier is None:
-            print("[Error] the identifier '" + identifier + "' cannot be None")
-            raise ValueError
-        if not identifier: 
-            print("[Error] the identifier '" + identifier + "' cannot be an empty string")
-            raise ValueError
-        if type is None:
-            print("[Error] the type '" + type + "' cannot be None")
-            raise ValueError
-            
-        # Declares the Variable
-        if type == SymbolTable.TYPE['VARIABLE']:
-            self.types[identifier] = SymbolTable.TYPE['VARIABLE']
-            variable = Variable(identifier, Variable.TYPE['NONE'], None)
-            self.variables[identifier] = copy.deepcopy(variable)
-        
-        # Declares the Packet
-        elif type == SymbolTable.TYPE['PACKET']:
-            self.types[identifier] = SymbolTable.TYPE['PACKET']
-            packet = Packet(identifier)
-            self.packets[identifier] = copy.deepcopy(packet)
-        
-        # Type not supported for declaration
-        else:
-            print("[Error] type '" + type + "' cannot be declared")
-            raise ValueError
-
-        
-    def define(self, obj):
-        """
-        Defines the given obj.
-        
-        :param obj: the object
-        :type obj: Variable, PacketFilter, List
-        
-        :raise: ValueError
-        """
-        # Defines the Variable
-        if isinstance(obj, Variable):
-            self.types[obj.identifier] = SymbolTable.TYPE['VARIABLE']
-            self.variables[obj.identifier] = copy.deepcopy(obj)
-        
-        # Defines the PacketFilter
-        elif isinstance(obj, PacketFilter):
-            self.types[obj.identifier] = SymbolTable.TYPE['FILTER']
-            self.filters[obj.identifier] = copy.deepcopy(obj)
-            
-        # Defines the List
-        elif isinstance(obj, List):
-            self.types[obj.identifier] = SymbolTable.TYPE['LIST']
-            self.lists[obj.identifier] = copy.deepcopy(obj.variables)
-        
-        # Object not supported
-        else:
-            print("[Error] '" + type(obj) + "' cannot be defined")
-            raise SyntaxError
-
-    
-    def exist(self, identifier):
-        """
-        Checks if the given identifier exists inside the symbol table.
-        
-        :param identifier: the identifier
-        :type identifier: str
-
-        :return: True if the identifier exists inside the symbol table, 
-                 False otherwise
-        """
-        if self.types.get(identifier, None) is None:
-            return False
-        return True
-    
-
-    def type(self, identifier):
-        """
-        Gets the type of a given identifier, if it exists inside 
-        the symbol table.
-        
-        :param identifier: the identifier
-        :type identifier: str
-        
-        :return: The type of the identifier, None otherwise
-        """
-        return self.types.get(identifier, None)
-
-
-    def variable(self, identifier):
-        """
-        Gets the variable having a given identifier, if it exists inside 
-        the symbol table.
-
-        :param identifier: the identifier
-        :type identifier: str
-        
-        :return: the variable if it exists, None otherwise
-        """
-        return self.variables.get(identifier, None)
-    
-    
-    def list(self, identifier):
-        """
-        Gets the list having a given identifier, if it exists 
-        inside the symbol table.
-
-        :param identifier: the identifier
-        :type identifier: str
-        
-        :return: the list if it exists, None otherwise
-        """
-        return self.lists.get(identifier, None)
-    
-    
-    def clear(self):
-        """
-        Clears the symbol table.
-        """
-        self.types.clear()
-        self.variables.clear()
-        self.filters.clear()
-        self.packets.clear()
-        self.lists.clear()
-
-
-class Variable(Type):
-    """
-    An ADL Variable is a generic container that stores a single value.
-    It can contains a reserved keyword, an integer, a real, a string or
-    can be left uninitialized.
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
     """
     
-    type = SymbolTypes.VARIABLE
+    symboltype = Symbol.Type.OPERATOR
     
-    @enum.unique
-    class VariableTypes(enum.Enum):
+    def __init__(self, operator):
         """
-        Types of ADL Variables.
+        Initializes the object. It stores the operator and assigns to it 
+        a mangled identifier.
+
+        :param operator: the operator
+        :type operator: str
+
+        :raise ValueError: the argument 'operator' is None or empty
         """
-        RESERVED = 'reserved'
-        INTEGER = 'integer'
-        STRING = 'string'
-        REAL = 'real'
-        NONE = 'none'
-        
+        if operator is None:
+            raise ValueError("None passed as an argument")
+        if not operator:
+            raise ValueError("Empty string passed as an argument")
+        # TODO check if the operator is recognized
+        self.identifier = Symbol._Symbol__prefix + operator
+        self.operator = operator
+
+
+# TODO embed into Variable
+# The entry for the undefined variables
+_undefined = ('NONE', 'none')
+
+# TODO embed into Variable
+def _build_variable_types():
+    """
+    Builds the types of this enum.Enum class.
+    """
+    tuples = (
+        (lexer.BasicOperandType.INTEGER.name, lexer.BasicOperandType.INTEGER.value),
+        (lexer.BasicOperandType.STRING.name, lexer.BasicOperandType.STRING.value),
+        (lexer.BasicOperandType.REAL.name, lexer.BasicOperandType.REAL.value),
+        _undefined)
+    return tuples
+
+
+class Variable(Symbol):
+    """
+    Container for variables. It can store a single string, integer or real
+    value or it can be left undefined.
+
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
+    """
     
-    TYPE = {
-        'RESERVED' : 'reserved',
-        'INTEGER' : 'integer',        
-        'STRING' : 'string',
-        'REAL' : 'real',
-        'NONE' : 'none',
-    }
+    # The type of the symbol
+    symboltype = Symbol.Type.VARIABLE
     
-    def __init__(self, identifier, type, value):
+    # The variable types
+    Type = enum.Enum('Type', _build_variable_types())
+    
+    def __init__(self, identifier, variabletype, value):
         """
-        Initializes the *Variable* object.
+        Initializes the Variable object.
         
         :param identifier: The identifier of the variable
         :type identifier: str
 
-        :param type: The type of the variable
-        :type type: str
+        :param variabletype: The type of the variable
+        :type variabletype: str
 
         :param value: The value of the variable
         :type value: str
         """
         if identifier is None:
-            print("[Error] the argument 'identifier' cannot be 'None'")
-            raise ValueError
+            raise ValueError("None passed as an identifier")
         if not identifier: 
-            print("[Error] the argument 'identifier' cannot be an empty string")
-            raise ValueError
-        if type is None:
-            print("[Error] the argument 'type' cannot be 'None'")
-            raise ValueError
-        if type not in list(Variable.TYPE.values()):
-            print("[Error] type '" + type + "' not supported")
-            raise ValueError
+            raise ValueError("Empty string passed as an identifier")
+        if variabletype is None:
+            raise ValueError("None passed as a variable type")
+        if variabletype not in Variable.Type:
+            raise ValueError("Variable type not recognized")
 
         # TODO checks the value against the type
 
         self.identifier = identifier
-        self.type = type
+        self.variabletype = variabletype
         self.value = value
 
 
-class List(Type):
+class Packet(Symbol):
     """
-    A list contains the references of its variables.
-    """
-    
-    type = SymbolTypes.LIST
-    
-    def __init__(self, identifier, variables):
-        """
-        Initializes the *List* object.
+    Container for packets. It stores only the identifier of the packet.
 
-        :param identifier: the identifier of the list
-        :type identifier: str
-        
-        :param variables: the list of references of variables
-        :type variables: list
-        """
-        self.identifier = identifier
-        self.variables = variables
-
-
-class Packet(Type):
-    """
-    Models a packet.
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
     """
     
-    type = SymbolTypes.PACKET
-
+    # The type of the symbol
+    symboltype = Symbol.Type.PACKET
+    
     def __init__(self, identifier):
         """
-        Initializes the *Packet* object.
-        
-        :param identifier: the identifier of the list
+        Initializes the Packet object.
+
+        :param identifier: The identifier of the packet
         :type identifier: str
         """
+        if identifier is None:
+            raise ValueError("None passed as an identifier")
+        if not identifier: 
+            raise ValueError("Empty string passed as an identifier")
         self.identifier = identifier
-    
 
-# TODO refactor the class name
-class PacketFilterElement(Type):
-    """
-    Models the packet filter basic element. It contains:
-    + one left operand,
-    + one comparison operator,
-    + one right operand.
-    """
-    
-    def __init__(self, left_operand, comparison_operator, right_operand):
-        """
-        Initializes the *PacketFilterElement* object.
-        
-        :param left_operand: the identifier of the left operand
-        :type left_operand: str
-        
-        :param comparison_operator: the comparison operator
-        :type comparison_operator: str
-        
-        :param right_operand: the identifier of the right operand
-        :type right_operand: str
-        """
-        self.left_operand = left_operand
-        self.comparison_operator = comparison_operator
-        self.right_operand = right_operand
 
-# TODO remove, replaced by Filter
-class PacketFilter(Type):
+class Filter(Symbol):
     """
-    Models the packet filter, i.e. the conditional statement inside a conditional attack. 
-    It contains a list of *FilterElement*s stored in RPN order.
+    Container for filters. It stores the packet filter, i.e. a list of 
+    identifiers that refer the filter's operands and operators.
+
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
     """
     
-    type = SymbolTypes.FILTER
+    # The type of the symbol
+    symboltype = Symbol.Type.FILTER
     
-    def __init__(self, identifier, rpn):
+    def __init__(self, identifier, items):
         """
-        Initializes the *PacketFilter* object.
-        
-        :param identifier: the identifier of the filter
+        Initializes the Packet object.
+
+        :param identifier: The identifier of the filter
         :type identifier: str
         
-        :param rpn: the list of *FilterElements* stored in RPN order
-        :type rpn: list
+        :param items: The tuple of the filter's items
+        :type items: tuple
         """
+        if identifier is None:
+            raise ValueError("None passed as an identifier")
+        if not identifier: 
+            raise ValueError("Empty string passed as an identifier")
+        if not items: 
+            raise ValueError("Empty tuple passed as items")
         self.identifier = identifier
-        self.rpn = copy.deepcopy(rpn)
-        
+        self.items = copy.deepcopy(items)
 
-# XXX new filter class
-class Filter(Type):
+
+class List(Symbol):
     """
-    Models the packet filter. 
-    
-    :param type: the type
-    :type type: model.types.SymbolTypes
+    Container for lists. It stores the list of 
+    identifiers that refer the items owned by the list.
+
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
     """
     
-    type = SymbolTypes.FILTER
+    # The type of the symbol
+    symboltype = Symbol.Type.LIST
     
-    def __init__(self, identifier, value):
+    def __init__(self, identifier, items):
         """
-        Initializes the *Filter* object. It stores its list of operands and 
-        operators in RPN order.
+        Initializes the List object.
+
+        :param identifier: The identifier of the list
+        :type identifier: str
+        
+        :param items: The tuple of the list's items
+        :type items: tuple
+        """
+        if identifier is None:
+            raise ValueError("None passed as an identifier")
+        if not identifier: 
+            raise ValueError("Empty string passed as an identifier")
+        if not items: 
+            raise ValueError("Empty tuple passed as items")
+        self.identifier = identifier
+        self.items = copy.deepcopy(items)
+
+
+class SymbolTable(object):
+    """
+    A symbol table that supports ADL types.
+    """
+    
+    def __init__(self, scope):
+        """
+        Initializes the SymbolTable object.
         
         :param self: the reference to the instance
-        :type self: model.types.Filter
+        :type self: model.types.SymbolTable
+        
+        :param scope: the scope scope of the symbol table
+        :type scope: int
+        
+        :param identifier_symboltype_dict: the dictionary that binds an identifier with a type
+        :type types: dict
+        
+        :param identifier_object_dict: the dictionary that binds an identifier with an object
+        :type identifier_object_dict: dict
+        """
+        self.scope = scope
+        self.identifier_symboltype_dict = {}
+        self.identifier_object_dict = {}
+
+    def empty(self):
+        """
+        Checks if the symbol table is empty.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+
+        :return: True if the symbol table is empty, False otherwise
+        """
+        return not any(self.identifier_symboltype_dict)
+    
+    def exist(self, identifier):
+        """
+        Checks if the given identifier exists.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+        
+        :param identifier: the identifier
+        :type identifier: str
+
+        :return: True if the identifier exists, False otherwise
+        """
+        return identifier in self.identifier_symboltype_dict
+    
+    def type(self, identifier):
+        """
+        Gets the type of the given identifier, if it exists.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
         
         :param identifier: the identifier
         :type identifier: str
         
-        :param value: the list of elements composing the filter
-        :type value: list
+        :return: the type, None otherwise
         """
-        self.identifier = identifier
-        self.value = copy.deepcopy(value)
+        return self.identifier_symboltype_dict.get(identifier, None)
+
+    def object(self, identifier):
+        """
+        Gets the object having the given identifier, if it exists.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+        
+        :param identifier: the identifier
+        :type identifier: str
+        
+        :return: the object, None otherwise
+        """
+        return self.identifier_object_dict.get(identifier, None)
+    
+    def declare(self, identifier, type):
+        """
+        Declares the given identifier having the given type.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+        
+        :param identifier: the identifier to be declared
+        :type identifier: str
+        
+        :param type: the type
+        :type type: model.types.Symbol.Type
+        
+        :return: True on success, False otherwise
+        """
+        if identifier is None:
+            raise ValueError("identifier cannot be None")
+        if not identifier: 
+            raise ValueError("identifier cannot be empty")
+        if type is None:
+            raise ValueError("type cannot be None")
+        if type not in Symbol.Type:
+            raise ValueError("type " + str(type) + " not recognized")
+        if type == Symbol.Type.FILTER:
+            raise ValueError("filter cannot be declared (only defined)")
+        if type == Symbol.Type.LIST:
+            raise ValueError("list cannot be declared (only defined)")
+        if type == Symbol.Type.OPERATOR:
+            raise ValueError("operators cannot be explicitly declared")
+
+        # Checks if the identifier already exists
+        if identifier in self.identifier_symboltype_dict:
+            return False
+            
+        # Stores the type into the symbol table
+        self.identifier_symboltype_dict[identifier] = type
+        # Builds an empty VARIABLE
+        if type == Symbol.Type.VARIABLE:
+            obj = Variable(identifier, Variable.Type.NONE, None)
+        # Builds an empty PACKET
+        elif type == Symbol.Type.PACKET:
+            obj = Packet(identifier)
+
+        # Stores the object into the symbol table
+        self.identifier_object_dict[identifier] = copy.deepcopy(obj)
+        return True
+
+    def define(self, obj):
+        """
+        Defines the given obj.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+        
+        :param obj: the object
+        :type obj: model.types.Symbol.Type
+        
+        :return: True on success, False otherwise
+        """
+        if obj.identifier is None:
+            raise ValueError("object's identifier cannot be None")
+        if not obj.identifier: 
+            raise ValueError("object's identifier cannot be empty")
+        if obj.symboltype is None:
+            raise ValueError("object's type cannot be None")
+        if obj.symboltype not in Symbol.Type:
+            raise ValueError("object's type not recognized")
+        
+        # Checks if the identifier already exists
+        if obj.identifier in self.identifier_symboltype_dict:
+            return False
+        # Stores the type into the symbol table
+        self.identifier_symboltype_dict[obj.identifier] = obj.symboltype
+        # Stores the object into the symbol table
+        self.identifier_object_dict[obj.identifier] = copy.deepcopy(obj)
+        return True
+
+    def clear(self):
+        """
+        Clears the symbol table.
+        
+        :param self: the reference to the instance
+        :type self: model.types.Symbol.Type
+        """
+        self.identifier_symboltype_dict.clear()
+        self.identifier_object_dict.clear()
+
+
+class SymbolHandler(object):
+    """
+    A multi-scope symbols handler. It provides an high level mechanism to 
+    handle the declaration and the definition of objects over a number of 
+    nested scopes.
+    """
+    
+    
+    def __init__(self):
+        """
+        Initializes the SymbolHandler object. Each instance owns a dictionary 
+        that contains a symbol table (value) per scope (key).
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+        
+        :param scope_symboltable_dict: the dictionary that binds a scope with a symbol table
+        :type scope_symboltable_dict: dict
+        """
+        self.scope_symboltable_dict = {}
+    
+    def allocate(self, outer, inner):
+        """
+        Allocates a new symbol table for each scope in the given range .
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+
+        :param outer: the outer scope, included
+        :type outer: int
+        
+        :param inner: the outer scope, included
+        :type inner: int
+        """
+        if outer < 0:
+            raise ValueError("outer cannot be negative")
+        if inner < 0:
+            raise ValueError("inner cannot be negative")
+        if outer > inner:
+            raise ValueError("outer cannot be greater than inner")
+        for scope in range(outer, inner + 1):
+            self.scope_symboltable_dict[scope] = SymbolTable(scope)
+
+    def dump(self):
+        """
+        Dumps all the symbol tables
+        """
+        self.scope_symboltable_dict.clear()
+
+    def declare(self, scope, identifier, type):
+        """
+        Declares the given identifier of the given type inside the symbol table 
+        of the given scope.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+
+        :param scope: the scope
+        :type scope: int
+
+        :param identifier: the identifier
+        :type identifier: str
+
+        :param type: the type
+        :type type: model.types.Symbol.Type
+        """
+        # Checks if a symbol table exists for the given scope
+        if scope not in self.scope_symboltable_dict:
+            return False
+        # Checks if the identifier does not already exist
+        if self.exist(identifier):
+            return False
+        # Declares the identifier
+        return self.scope_symboltable_dict[scope].declare(identifier, type)
+        
+    def define(self, scope, obj):
+        """
+        Defines the given objet inside the symbol table of the given scope.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+
+        :param scope: the scope
+        :type scope: int
+        
+        :param obj: the object
+        :type obj: model.types.Operator
+                 | model.types.Variable
+                 | model.types.Filter
+                 | model.types.Packet
+                 | model.types.List
+        """
+        # Checks if a symbol table exists for the given scope
+        if scope not in self.scope_symboltable_dict:
+            return False
+        # Defines the object into the given scope
+        return self.scope_symboltable_dict[scope].define(obj)
+    
+    def clear(self, scope):
+        """
+        Clears the symbol table related to the given scope.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+
+        :param scope: the scope
+        :type scope: int
+        
+        :return: the symbol table if it exists, otherwise *None*
+        """
+        if scope not in self.scope_symboltable_dict:
+            return False
+        self.scope_symboltable_dict[scope].clear()
+        return True
+   
+    def exist(self, identifier):
+        """
+        Checks if the given identifier exists.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolHandler
+        
+        :param identifier: the identifier
+        :type identifier: str
+        """
+        # Scans all the scopes
+        for scope in list(self.scope_symboltable_dict.keys()):
+            if self.scope_symboltable_dict[scope].exist(identifier):
+                return True
+        return False
 
