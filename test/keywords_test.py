@@ -8,14 +8,14 @@
 # This module tests the ADL keywords.
 #
 # Usage: 
-# $ python3 -m unittest -v testkeywords.py
+# $ python3 -m unittest -v keywords_test.py
 # -----------------------------------------------------------------------------
 
 import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../../adl/")
+sys.path.insert(0,"../adl/")
 import lexer.keywords as keywords
 
 
@@ -47,6 +47,7 @@ class TestKeywords(unittest.TestCase):
         @classmethod
         def rview(cls):
             return keywords._rview(cls)
+
     
     def setUp(self):
         """

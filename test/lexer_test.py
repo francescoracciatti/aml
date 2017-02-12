@@ -8,18 +8,18 @@
 # This module tests the ADL lexer.
 #
 # Usage: 
-# $ python3 -m unittest -v testlexer.py
+# $ python3 -m unittest -v lexer_test.py
 # -----------------------------------------------------------------------------
 
 import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../../adl/")
+sys.path.insert(0,"../adl/")
 import lexer.lexer as lexer
 
 
-class TestLExer(unittest.TestCase):
+class TestLexer(unittest.TestCase):
     """
     Tests for the ADL lexer.
     """

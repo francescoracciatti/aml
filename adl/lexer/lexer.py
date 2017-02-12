@@ -16,6 +16,7 @@ class BasicSymbol(enum.Enum):
     """
     The types for basic symbols.
     """
+    RESERVED = 'reserved'
     OPERATOR = 'operator'
     OPERAND = 'operand'
 
@@ -175,11 +176,16 @@ t_RBRACK = r'\]'
 t_LCURVY = r'\{'
 t_RCURVY = r'\}'
 t_COMMA = r'\,'
-# Regex rule for string
-t_STRING = r'\"([^\\"]|(\\.))*\"'
 
 
-# Regex rule for signed real number
+# Regex rule for strings
+def t_STRING(t):
+    r'\"([^\\"]|(\\.))*\"'
+    t.value = t.value.replace("\"", "")
+    return t
+    
+
+# Regex rule for signed real numbers
 def t_REAL(t):
     r'-?\d+\.\d+'
     try:
@@ -189,7 +195,7 @@ def t_REAL(t):
     return t
 
 
-# Regex rule for signed integer number
+# Regex rule for signed integer numbers
 def t_INTEGER(t):
     r'-?\d+'
     try:

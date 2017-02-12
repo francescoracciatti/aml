@@ -19,7 +19,7 @@ def _tuples():
         Builds the types of an enum.Enum class.
         """
         tuples = list(keywords.Type.view().items())
-        tuples.append((lexer.BasicSymbol.OPERATOR.name, lexer.BasicSymbol.OPERATOR.value))
+        tuples.append((lexer.BasicSymbol.RESERVED.name, lexer.BasicSymbol.RESERVED.value))
         return tuples
 
 
@@ -42,33 +42,33 @@ class Symbol(metaclass=abc.ABCMeta):
         pass
 
 
-class Operator(Symbol):
+class Reserved(Symbol):
     """
-    Container for operators.
+    Container for reserved keywords.
 
     :param symboltype: the type of the symbol
     :type symboltype: Symbol.Type
     """
     
-    symboltype = Symbol.Type.OPERATOR
+    symboltype = Symbol.Type.RESERVED
     
-    def __init__(self, operator):
+    def __init__(self, reserved):
         """
-        Initializes the object. It stores the operator and assigns to it 
+        Initializes the object. It stores the reserved keyword and assigns to it 
         a mangled identifier.
 
-        :param operator: the operator
-        :type operator: str
+        :param reserved: the reserved keyword
+        :type reserved: str
 
-        :raise ValueError: the argument 'operator' is None or empty
+        :raise ValueError: the argument 'reserved' is None or empty
         """
-        if operator is None:
+        if reserved is None:
             raise ValueError("None passed as an argument")
-        if not operator:
+        if not reserved:
             raise ValueError("Empty string passed as an argument")
-        # TODO check if the operator is recognized
-        self.identifier = Symbol._Symbol__prefix + operator
-        self.operator = operator
+        # TODO check if the reserved is recognized
+        self.identifier = Symbol._Symbol__prefix + reserved
+        self.reserved = reserved
 
 
 # TODO embed into Variable
@@ -130,6 +130,34 @@ class Variable(Symbol):
         self.identifier = identifier
         self.variabletype = variabletype
         self.value = value
+
+
+class AutoVariable(Variable):
+    """
+    Container for automatic defined variables. 
+    It can store a single string, integer or real value.
+
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
+    """
+    
+    # The type of the symbol
+    symboltype = Symbol.Type.VARIABLE
+
+    def __init__(self, variabletype, value):
+        """
+        Initializes the AutoVariable object.
+        
+        :param variabletype: The type of the variable
+        :type variabletype: str
+
+        :param value: The value of the variable
+        :type value: str
+        """
+        if variabletype == Variable.Type.NONE:
+            raise ValueError("type cannot be Variable.Type.NONE")
+        identifier = Symbol._Symbol__prefix + str(value)
+        super(AutoVariable, self).__init__(identifier, variabletype, value)
 
 
 class Packet(Symbol):
@@ -326,8 +354,8 @@ class SymbolTable(object):
             raise ValueError("filter cannot be declared (only defined)")
         if type == Symbol.Type.LIST:
             raise ValueError("list cannot be declared (only defined)")
-        if type == Symbol.Type.OPERATOR:
-            raise ValueError("operators cannot be explicitly declared")
+        if type == Symbol.Type.RESERVED:
+            raise ValueError("reserved cannot be explicitly declared")
 
         # Checks if the identifier already exists
         if identifier in self.identifier_symboltype_dict:
@@ -395,41 +423,23 @@ class SymbolHandler(object):
     """
     
     
-    def __init__(self):
+    def __init__(self, scopes):
         """
         Initializes the SymbolHandler object. Each instance owns a dictionary 
         that contains a symbol table (value) per scope (key).
         
         :param self: the reference to the instance
         :type self: model.types.SymbolHandler
-        
-        :param scope_symboltable_dict: the dictionary that binds a scope with a symbol table
-        :type scope_symboltable_dict: dict
+
+        :param scopes: the number of scopes
+        :type scopes: int        
         """
+        if scopes < 0:
+            raise ValueError("scopes cannot be negative")
         self.scope_symboltable_dict = {}
-    
-    def allocate(self, outer, inner):
-        """
-        Allocates a new symbol table for each scope in the given range .
-        
-        :param self: the reference to the instance
-        :type self: model.types.SymbolHandler
-
-        :param outer: the outer scope, included
-        :type outer: int
-        
-        :param inner: the outer scope, included
-        :type inner: int
-        """
-        if outer < 0:
-            raise ValueError("outer cannot be negative")
-        if inner < 0:
-            raise ValueError("inner cannot be negative")
-        if outer > inner:
-            raise ValueError("outer cannot be greater than inner")
-        for scope in range(outer, inner + 1):
+        for scope in range(0, scopes):
             self.scope_symboltable_dict[scope] = SymbolTable(scope)
-
+    
     def dump(self):
         """
         Dumps all the symbol tables
@@ -457,7 +467,7 @@ class SymbolHandler(object):
         if scope not in self.scope_symboltable_dict:
             return False
         # Checks if the identifier does not already exist
-        if self.exist(identifier):
+        if self.exist(scope, identifier):
             return False
         # Declares the identifier
         return self.scope_symboltable_dict[scope].declare(identifier, type)
@@ -473,7 +483,7 @@ class SymbolHandler(object):
         :type scope: int
         
         :param obj: the object
-        :type obj: model.types.Operator
+        :type obj: model.types.Reserved
                  | model.types.Variable
                  | model.types.Filter
                  | model.types.Packet
@@ -502,19 +512,42 @@ class SymbolHandler(object):
         self.scope_symboltable_dict[scope].clear()
         return True
    
-    def exist(self, identifier):
+    def exist(self, outer, identifier):
         """
-        Checks if the given identifier exists.
+        Checks if the given identifier exists in the range [0, outer].
         
         :param self: the reference to the instance
         :type self: model.types.SymbolHandler
         
+        :param outer: the outer scoper
+        :type outer: int
+
         :param identifier: the identifier
         :type identifier: str
         """
-        # Scans all the scopes
-        for scope in list(self.scope_symboltable_dict.keys()):
+        if outer not in self.scope_symboltable_dict:
+            raise ValueError("out of scope")
+        for scope in range(0, outer + 1):
             if self.scope_symboltable_dict[scope].exist(identifier):
                 return True
         return False
+
+    def object(self, identifier):
+        """
+        Gets the object having the given identifier, if it exists.
+        
+        :param self: the reference to the instance
+        :type self: model.types.SymbolTable
+        
+        :param identifier: the identifier
+        :type identifier: str
+        
+        :return: the object, None otherwise
+        """
+        for symboltable in list(self.scope_symboltable_dict.values()):
+            obj = symboltable.object(identifier)
+            if obj is not None:
+                return obj
+        return None
+
 

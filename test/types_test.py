@@ -8,14 +8,14 @@
 # This module tests the mechanism for handling ADL types.
 #
 # Usage: 
-# $ python3 -m unittest -v testtypes.py
+# $ python3 -m unittest -v types_test.py
 # -----------------------------------------------------------------------------
 
 import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../../adl/")
+sys.path.insert(0,"../adl/")
 import model.types as types
 import lexer.lexer as lexer
 import lexer.keywords as keywords
@@ -31,7 +31,7 @@ class TestTypes(unittest.TestCase):
         """
         # Builds the control list of tuples
         self.tuples = list(keywords.Type.view().items())
-        self.tuples.append((lexer.BasicSymbol.OPERATOR.name, lexer.BasicSymbol.OPERATOR.value))
+        self.tuples.append((lexer.BasicSymbol.RESERVED.name, lexer.BasicSymbol.RESERVED.value))
 
     def tearDown(self):
         """
@@ -47,23 +47,23 @@ class TestTypes(unittest.TestCase):
             self.assertIn((e.name, e.value), self.tuples)
         self.assertEqual(i + 1, len(self.tuples))
         
-    def test_class_operator(self):
+    def test_class_reserved(self):
         """
-        Tests the class types.Operator.
+        Tests the class types.Reserved.
         """
         # Tests the type of the symbol
-        self.assertEqual(types.Operator.symboltype, types.Symbol.Type.OPERATOR)
+        self.assertEqual(types.Reserved.symboltype, types.Symbol.Type.RESERVED)
         # Tests the argument guards
-        operator = None
-        self.assertRaises(ValueError, types.Operator, operator)
-        operator = ''
-        self.assertRaises(ValueError, types.Operator, operator)
+        reserved = None
+        self.assertRaises(ValueError, types.Reserved, reserved)
+        reserved = ''
+        self.assertRaises(ValueError, types.Reserved, reserved)
         # Tests the initializer
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier = types.Symbol._Symbol__prefix + operator
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier = types.Symbol._Symbol__prefix + reserved
         self.assertEqual(obj.identifier, identifier)
-        self.assertEqual(obj.operator, operator)
+        self.assertEqual(obj.reserved, reserved)
          
     def test_class_variable(self):
         """
@@ -81,7 +81,7 @@ class TestTypes(unittest.TestCase):
         identifier = 'var'
         variabletype = None
         self.assertRaises(ValueError, types.Variable, identifier, variabletype, value)
-        variabletype = types.Symbol.Type.OPERATOR
+        variabletype = types.Symbol.Type.RESERVED
         self.assertRaises(ValueError, types.Variable, identifier, variabletype, value)
         # Tests the initializer
         variabletype = types.Variable.Type.INTEGER
@@ -89,6 +89,32 @@ class TestTypes(unittest.TestCase):
         self.assertEqual(obj.identifier, identifier)
         self.assertEqual(obj.variabletype, variabletype)
         self.assertEqual(obj.value, value)
+
+    def test_class_autovariable(self):
+        """
+        Tests the class types.AutoVariable.
+        """       
+        # Tests the argument guards
+        variabletype = types.Variable.Type.NONE
+        value = 10
+        self.assertRaises(ValueError, types.AutoVariable, variabletype, value)
+        # Tests the initializer
+        variabletype = types.Variable.Type.INTEGER
+        obj = types.AutoVariable(variabletype, value)
+        test = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(obj.identifier, test)
+
+        value = 'test'
+        variabletype = types.Variable.Type.STRING
+        obj = types.AutoVariable(variabletype, value)
+        test = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(obj.identifier, test)
+        
+        value = 10.5
+        variabletype = types.Variable.Type.REAL
+        obj = types.AutoVariable(variabletype, value)
+        test = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(obj.identifier, test)
 
     def test_class_packet(self):
         """
@@ -185,7 +211,7 @@ class TestSymbolTable(unittest.TestCase):
         self.assertRaises(ValueError, self.symboltable.declare, 'obj', types.Variable.Type.STRING)
         self.assertRaises(ValueError, self.symboltable.declare, 'obj', types.Symbol.Type.FILTER)
         self.assertRaises(ValueError, self.symboltable.declare, 'obj', types.Symbol.Type.LIST)
-        self.assertRaises(ValueError, self.symboltable.declare, 'obj', types.Symbol.Type.OPERATOR)
+        self.assertRaises(ValueError, self.symboltable.declare, 'obj', types.Symbol.Type.RESERVED)
         self.assertFalse(self.symboltable.exist(None))
         self.assertFalse(self.symboltable.exist(''))
         self.assertFalse(self.symboltable.exist('obj'))
@@ -227,9 +253,9 @@ class TestSymbolTable(unittest.TestCase):
         self.assertFalse(self.symboltable.exist(''))
         self.assertFalse(self.symboltable.exist('obj'))
         # Tests double definition guard
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symboltable.define(obj))
         self.assertFalse(self.symboltable.define(obj))
         identifier_variable = 'var'
@@ -249,8 +275,8 @@ class TestSymbolTable(unittest.TestCase):
         self.assertTrue(self.symboltable.define(obj))
         self.assertFalse(self.symboltable.define(obj))
         # Checks the existance of the defined objects
-        self.assertTrue(self.symboltable.exist(identifier_operator))
-        self.assertEqual(self.symboltable.type(identifier_operator), types.Symbol.Type.OPERATOR)
+        self.assertTrue(self.symboltable.exist(identifier_reserved))
+        self.assertEqual(self.symboltable.type(identifier_reserved), types.Symbol.Type.RESERVED)
         self.assertTrue(self.symboltable.exist(identifier_variable))
         self.assertEqual(self.symboltable.type(identifier_variable), types.Symbol.Type.VARIABLE)
         self.assertIsNotNone(self.symboltable.object(identifier_variable))
@@ -282,10 +308,10 @@ class TestSymbolTable(unittest.TestCase):
         """
         Tests the method SymbolTable::type.
         """
-        # Defines an operator
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symboltable.define(obj))
         # Defines a variable
         identifier_variable = 'var'
@@ -304,7 +330,7 @@ class TestSymbolTable(unittest.TestCase):
         obj = types.List(identifier_list, [1,2,3,4])
         self.assertTrue(self.symboltable.define(obj))
         # Checks the type of the objects previously defined
-        self.assertEqual(self.symboltable.type(identifier_operator), types.Symbol.Type.OPERATOR)
+        self.assertEqual(self.symboltable.type(identifier_reserved), types.Symbol.Type.RESERVED)
         self.assertEqual(self.symboltable.type(identifier_variable), types.Symbol.Type.VARIABLE)
         self.assertEqual(self.symboltable.type(identifier_packet), types.Symbol.Type.PACKET)
         self.assertEqual(self.symboltable.type(identifier_filter), types.Symbol.Type.FILTER)
@@ -314,10 +340,10 @@ class TestSymbolTable(unittest.TestCase):
         """
         Tests the method SymbolTable::exist.
         """
-        # Defines an operator
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symboltable.define(obj))
         # Defines a variable
         identifier_variable = 'var'
@@ -336,7 +362,7 @@ class TestSymbolTable(unittest.TestCase):
         obj = types.List(identifier_list, [1,2,3,4])
         self.assertTrue(self.symboltable.define(obj))
         # Checks if the defined objects exist
-        self.assertTrue(self.symboltable.exist(identifier_operator))
+        self.assertTrue(self.symboltable.exist(identifier_reserved))
         self.assertTrue(self.symboltable.exist(identifier_variable))
         self.assertTrue(self.symboltable.exist(identifier_packet))
         self.assertTrue(self.symboltable.exist(identifier_filter))
@@ -361,10 +387,10 @@ class TestSymbolTable(unittest.TestCase):
         """
         Tests the method SymbolTable::clear.
         """
-        # Defines an operator
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symboltable.define(obj))
         # Defines a variable
         identifier_variable = 'var'
@@ -398,7 +424,7 @@ class TestSymbolHandler(unittest.TestCase):
         Sets up a symbol table.
         """        
         # Builds a symbol handler
-        self.symbolhandler = types.SymbolHandler()
+        self.symbolhandler = types.SymbolHandler(0)
         # Tests empty
         self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), 0)
 
@@ -407,18 +433,6 @@ class TestSymbolHandler(unittest.TestCase):
         Tears down the test class.
         """
         self.symbolhandler.dump()
-
-    def test_allocate(self):
-        """
-        Tests the method SymbolHandler::allocate.
-        """
-        # Tests argument check
-        self.assertRaises(ValueError, self.symbolhandler.allocate, -1, 0)
-        self.assertRaises(ValueError, self.symbolhandler.allocate, 0, -1)
-        self.assertRaises(ValueError, self.symbolhandler.allocate, 1, 0)
-        scopes = 5    
-        self.symbolhandler.allocate(0, scopes - 1)
-        self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), scopes)
 
     def test_dump(self):
         """
@@ -430,7 +444,7 @@ class TestSymbolHandler(unittest.TestCase):
         self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), 0)
         # Tests dump with a full symbol handler
         scopes = 10
-        self.symbolhandler.allocate(0, scopes - 1)
+        self.symbolhandler = types.SymbolHandler(scopes)
         self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), scopes)
         self.symbolhandler.dump()
         self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), 0)
@@ -441,7 +455,7 @@ class TestSymbolHandler(unittest.TestCase):
         """
         # Tests declare out of scope
         scopes = 5
-        self.symbolhandler.allocate(0, scopes - 1)
+        self.symbolhandler = types.SymbolHandler(scopes)
         self.assertFalse(self.symbolhandler.declare(10, 'var', types.Symbol.Type.VARIABLE))
         # Populates the symbol handler
         identifier_operand = '__=='
@@ -451,7 +465,7 @@ class TestSymbolHandler(unittest.TestCase):
         identifier_list = 'lst'
         for scope in range(0, scopes, 1):
             self.assertRaises(ValueError, self.symbolhandler.declare, 
-                    scope, identifier_operand + str(scope), types.Symbol.Type.OPERATOR)
+                    scope, identifier_operand + str(scope), types.Symbol.Type.RESERVED)
             self.assertTrue(self.symbolhandler.declare(
                     scope, identifier_variable + str(scope), types.Symbol.Type.VARIABLE))
             self.assertTrue(self.symbolhandler.declare(
@@ -472,15 +486,15 @@ class TestSymbolHandler(unittest.TestCase):
         Tests the method SymbolHandler::define.
         """
         scopes = 5
-        self.symbolhandler.allocate(0, scopes - 1)
+        self.symbolhandler = types.SymbolHandler(scopes)
         # Test out of scope guard
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertFalse(self.symbolhandler.define(-1, obj))
         self.assertFalse(self.symbolhandler.define(10, obj))
-        self.assertFalse(self.symbolhandler.exist(identifier_operator))
-        # Defines an operator and test double definition guard
+        self.assertFalse(self.symbolhandler.exist(scopes - 1, identifier_reserved))
+        # Defines a reserved keyword and test double definition guard
         self.assertTrue(self.symbolhandler.define(0, obj))
         self.assertFalse(self.symbolhandler.define(0, obj))
         # Defines a variable and test double definition guard
@@ -503,17 +517,17 @@ class TestSymbolHandler(unittest.TestCase):
         obj = types.List(identifier_list, [1,2,3,4])
         self.assertTrue(self.symbolhandler.define(0, obj))
         self.assertFalse(self.symbolhandler.define(0, obj))
-
+    
     def test_exist(self):
         """
         Tests the method SymbolHandler::exist.
         """
         scopes = 5
-        self.symbolhandler.allocate(0, scopes - 1)
-        # Defines an operator
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        self.symbolhandler = types.SymbolHandler(scopes)
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symbolhandler.define(0, obj))
         # Defines a variable
         identifier_variable = 'var'
@@ -532,12 +546,46 @@ class TestSymbolHandler(unittest.TestCase):
         obj = types.List(identifier_list, [1,2,3,4])
         self.assertTrue(self.symbolhandler.define(4, obj))
         # Checks the existance of the objects previously defined
-        self.assertTrue(self.symbolhandler.exist(identifier_operator))
-        self.assertTrue(self.symbolhandler.exist(identifier_variable))
-        self.assertTrue(self.symbolhandler.exist(identifier_packet))
-        self.assertTrue(self.symbolhandler.exist(identifier_filter))
-        self.assertTrue(self.symbolhandler.exist(identifier_list))
+        self.assertTrue(self.symbolhandler.exist(scopes - 1, identifier_reserved))
+        self.assertTrue(self.symbolhandler.exist(scopes - 1, identifier_variable))
+        self.assertTrue(self.symbolhandler.exist(scopes - 1, identifier_packet))
+        self.assertTrue(self.symbolhandler.exist(scopes - 1, identifier_filter))
+        self.assertTrue(self.symbolhandler.exist(scopes - 1, identifier_list))
+        
      
+    def test_object(self):
+        """
+        Tests the method SymbolHandler::object.
+        """
+        scopes = 5
+        self.symbolhandler = types.SymbolHandler(scopes)
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
+        self.symbolhandler.define(0, obj)
+        self.assertIsNotNone(self.symbolhandler.object(identifier_reserved))
+        # Defines a variable
+        identifier_variable = 'var'
+        obj = types.Variable(identifier_variable, types.Variable.Type.INTEGER, 10)
+        self.symbolhandler.define(1, obj)
+        self.assertIsNotNone(self.symbolhandler.object(identifier_variable))
+        # Defines a packet
+        identifier_packet = 'pkt'
+        obj = types.Packet(identifier_packet)
+        self.symbolhandler.define(2, obj)
+        self.assertIsNotNone(self.symbolhandler.object(identifier_packet))
+        # Defines a filter
+        identifier_filter = 'flt'
+        obj = types.Filter(identifier_filter, [1,2,3,4])
+        self.symbolhandler.define(3, obj)
+        self.assertIsNotNone(self.symbolhandler.object(identifier_filter))
+        # Defines a list
+        identifier_list = 'lst'
+        obj = types.List(identifier_list, [1,2,3,4])
+        self.symbolhandler.define(4, obj)
+        self.assertIsNotNone(self.symbolhandler.object(identifier_list))
+
     def test_clear(self):
         """
         Tests the method SymbolHandler::clear.
@@ -548,11 +596,11 @@ class TestSymbolHandler(unittest.TestCase):
         self.assertFalse(self.symbolhandler.clear(1))
         # Populates the symbol handler
         scopes = 5
-        self.symbolhandler.allocate(0, scopes - 1)
-        # Defines an operator
-        operator = '=='
-        obj = types.Operator(operator)
-        identifier_operator = obj.identifier
+        self.symbolhandler = types.SymbolHandler(scopes)
+        # Defines a reserved keyword
+        reserved = '=='
+        obj = types.Reserved(reserved)
+        identifier_reserved = obj.identifier
         self.assertTrue(self.symbolhandler.define(0, obj))
         # Defines a variable
         identifier_variable = 'var'

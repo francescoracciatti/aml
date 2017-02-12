@@ -6,11 +6,9 @@
 # This module provides the ADL parser.
 # -----------------------------------------------------------------------------
 
-
 import ply.yacc as yacc
 from lexer.lexer import *
 from parser.parser import *
-
 
 class ADL(object):
     """
@@ -20,7 +18,7 @@ class ADL(object):
     @staticmethod
     def parse(source):
         """
-        Parses the source string and returns the scenario.
+        Parses the source string and builds the object representing the scenario.
         
         :param source: the string to be parsed
         :type source: str
