@@ -79,29 +79,93 @@ class TestKeywords(unittest.TestCase):
 
     def test_method__keywords(self):
         """
-        Tests the method _keywords()
+        Tests the method _keywords().
         """
         self.assertListEqual(self.TestEnum.keywords(), self.keywords)
+
+    def test_method_keywords(self):
+        """
+        Test the method keywords().
+        """
+        test = []
+        for e in keywords.Type:
+            test.append(e.value)
+        for e in keywords.Primitive:
+            test.append(e.value)
+        for e in keywords.Statement:
+            test.append(e.value)
+        for e in keywords.Accessor:
+            test.append(e.value)
+        for e in keywords.WellKnown:
+            test.append(e.value)
+        self.assertListEqual(keywords.keywords(), test)
     
     def test_method__tokens(self):
         """
-        Tests the method _tokens()
+        Tests the method _tokens().
         """
         self.assertListEqual(self.TestEnum.tokens(), self.tokens)
 
+    def test_method_tokens(self):
+        """
+        Tests the method tokens().
+        """
+        test = []
+        for e in keywords.Type:
+            test.append(e.name)
+        for e in keywords.Primitive:
+            test.append(e.name)
+        for e in keywords.Statement:
+            test.append(e.name)
+        for e in keywords.Accessor:
+            test.append(e.name)
+        for e in keywords.WellKnown:
+            test.append(e.name)
+        self.assertListEqual(keywords.tokens(), test)
+
     def test_method__view(self):
         """
-        Tests the method _view()
+        Tests the method _view().
         """
         self.assertDictEqual(self.TestEnum.view(), self.view)
-
-    def test_method__view(self):
+    
+    def test_method_view(self):
         """
-        Tests the method _rview()
+        Tests the method view().
+        """
+        test = {}
+        for e in keywords.Type:
+            test[e.name] = e.value
+        for e in keywords.Primitive:
+            test[e.name] = e.value
+        for e in keywords.Statement:
+            test[e.name] = e.value
+        for e in keywords.Accessor:
+            test[e.name] = e.value
+        for e in keywords.WellKnown:
+            test[e.name] = e.value
+        self.assertDictEqual(keywords.view(), test)
+
+    def test_method__rview(self):
+        """
+        Tests the method _rview().
         """
         self.assertDictEqual(self.TestEnum.rview(), self.rview)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    
+    def test_method_rview(self):
+        """
+        Tests the method rview().
+        """
+        test = {}
+        for e in keywords.Type:
+            test[e.value] = e.name
+        for e in keywords.Primitive:
+            test[e.value] = e.name
+        for e in keywords.Statement:
+            test[e.value] = e.name
+        for e in keywords.Accessor:
+            test[e.value] = e.name
+        for e in keywords.WellKnown:
+            test[e.value] = e.name
+        self.assertDictEqual(keywords.rview(), test)
 

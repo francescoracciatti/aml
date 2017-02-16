@@ -196,11 +196,11 @@ class TestPrimitive(unittest.TestCase):
         Tests the class Expression.
         """
         destination = 'identifier'
-        rpn = 'identifier'
-        obj = statements.Expression(destination, rpn)
+        expression = ['id1', 'id2', '__+']
+        obj = statements.Expression(destination, expression)
         self.assertIsInstance(obj, statements.Primitive)
         self.assertEqual(obj.destination, destination)
-        self.assertEqual(obj.rpn, rpn)
+        self.assertListEqual(obj.expression, expression)
 
 
 class TestCodeblockTable(unittest.TestCase):
@@ -295,8 +295,4 @@ class TestCodeblockHandler(unittest.TestCase):
             self.codeblockhandler.append(scope, mock_codeblock)
         self.codeblockhandler.dump()
         self.assertEqual(len(self.codeblockhandler.scope_codeblocktable_dict), 0)
-
-
-if __name__ == '__main__':
-    unittest.main()
 

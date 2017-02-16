@@ -1,0 +1,147 @@
+# -----------------------------------------------------------------------------
+# source.adl
+#
+# Author: Francesco Racciatti (racciatti.francesco@gmail.com)
+#
+# This module contains the attack scenario to test the parser.
+# -----------------------------------------------------------------------------
+
+# Cyber-physical attack scenario
+scenario {
+
+    # Types inside the scenario scope
+    variable scenarioVarUndefined
+    variable scenarioVarInteger = 10000
+    variable scenarioVarString = "layer0.field0"
+    variable scenarioVarReal = 0.3
+    packet scenarioPacket
+    filter scenarioFilter = ((scenarioVarString > scenarioVarInteger) && ("layer0.field1" == 10)) 
+                    || (scenarioVarString != 10)
+    list scenarioList = [scenarioVarInteger, 1, "string", 0.1]
+
+    # Trivial compound
+    from scenarioVarInteger us {
+        variable compoundVarUndefined
+    }
+    
+    # Trivial compound
+    from 200 ms {
+        variable compoundVarUndefined
+    }
+
+    # Compound
+    from 100.5 s {
+    
+        # Types inside the compound scope
+        variable compoundVarUndefined
+        variable compoundVarInteger = 10
+        variable compoundVarString = "layer1.field0"
+        variable compoundVarReal = 0.5
+        packet compoundPacket
+        filter compoundFilter = (compoundVarString != compoundVarInteger)
+        list compoundList = [scenarioVarInteger, compoundVarInteger, 1, "string", 0.1]
+
+        # Trivial once
+        once {
+            variable onceVarUndefined
+        }
+
+        # Once
+        once {
+            # Types inside the once scope
+            variable onceVarUndefined
+            variable onceVarInteger = 10
+            variable onceVarString = "layer1.field0"
+            variable onceVarReal = 0.5
+            packet oncePacket
+            # Filters inside the once scopes are pretty useless
+            filter onceFilter = (onceVarString != onceVarInteger)
+            list onceList = [scenarioVarInteger, compoundVarInteger, onceVarInteger, 1, "string", 0.1]
+            
+            # Primitive deceive component
+            variable node = 1
+            variable component = 1
+            variable value = 10.5
+            deceiveComponent(node, component, value)
+            deceiveComponent(2, 2, 15.5)
+
+            # Primitive disable component
+            disableComponent(node, component)
+            disableComponent(2, 2)
+            
+            # Primitive destroy component
+            destroyComponent(node, component)
+            destroyComponent(2, 2)
+            
+            # Primitive misplace node
+            # Generic position: [x, y, z, roll, pitch, yaw]
+            list position = [1, 1, 1, 0.5, 0.5, 0.5]
+            misplaceNode(node, position)
+            misplaceNode(2, [2, 2, 2, 1, 1, 1])
+            
+            # Primitive destroy node
+            destroyNode(node)
+            destroyNode(2)
+
+            # Creates a packet
+            packet udpPacket1
+            packet udpPacket2
+            variable protocol = "udp"
+            createPacket(udpPacket1, protocol)
+            createPacket(udpPacket2, "udp")
+            
+            # Writes a field
+            variable sourcePort = 2000
+            variable path = "layer4.sourcePort"
+            writeField(udpPacket1, path, sourcePort)
+            writeField(udpPacket2, "layer4.destinationPort", 1000)
+
+            # Clones a packet
+            packet udpPacket3
+            clonePacket(udpPacket3, udpPacket2)
+            
+            # Injects a packet
+            variable targetNode = 2
+            variable delay = 10
+            injectPacket(udpPacket1, targetNode, tx, delay, s)
+            injectPacket(udpPacket2, 2, rx, 5, s)
+            
+            # Expressions
+            variable integer = 1
+            variable otherinteger = 2
+            integer = otherinteger
+            integer = otherinteger + 2
+            integer = 0
+            integer = ((((1 + 1) / 2) * 5) % 4) - 1
+            integer = - (1 - 2)
+            integer += ((((1 + 1) / 2) * 5) % 4) - 1
+            integer -= ((((1 + 1) / 2) * 5) % 4) - 1
+            integer *= ((((1 + 1) / 2) * 5) % 4) - 1
+            integer /= ((((1 + 1) / 2) * 5) % 4) - 1
+            integer %= ((((1 + 1) / 2) * 5) % 4) - 1
+            
+            variable real = 1.0
+            real += 1.1
+            real -= ((((1 + 1) / 2) * 5) % 4) - 1
+
+            variable string = "hello"
+            string += ", world!"
+                        
+        } # once
+        
+        # TBI periodic
+        every 10 s {}
+        
+        # TBI conditional
+        list targets = [1, 2, 3, 4, 5]
+        filter udpfilter = ("layer4.sourceport" == 2000)
+        for nodes in target {
+            for packets matching udpfilter {
+            
+            }
+        }
+        
+    } # compound
+
+} # scenario
+

@@ -173,13 +173,29 @@ class TestTypes(unittest.TestCase):
         obj = types.List(identifier, items)
         self.assertEqual(obj.identifier, identifier)
         self.assertTupleEqual(obj.items, items)
-
-    def test_class_symboltable(self):
+        
+    def test_class_autolist(self):
         """
-        Tests the class types.SymbolTable.
+        Tests the class types.AutoList.
         """       
+        # Tests the type of the symbol
+        self.assertEqual(types.AutoList.symboltype, types.Symbol.Type.LIST)
+        # Tests the argument guards
+        items = []
+        self.assertRaises(ValueError, types.AutoList, items)
+        identifier = None
+        self.assertRaises(ValueError, types.AutoList, items)
+        # Tests the initializer
+        items = ['var1', 'var2', 'var3']
+        obj = types.AutoList(items)
+        test = types.Symbol._Symbol__prefix
+        for i in items:
+            test += i
+        self.assertEqual(obj.identifier, test)
+        self.assertListEqual(obj.items, items)
 
 
+        
 class TestSymbolTable(unittest.TestCase):
     """
     Tests for the ADL SymbolTable.
@@ -625,7 +641,3 @@ class TestSymbolHandler(unittest.TestCase):
         self.assertEqual(len(self.symbolhandler.scope_symboltable_dict), scopes)
         self.assertTrue(self.symbolhandler.scope_symboltable_dict[scope_target].empty())
         
-
-if __name__ == '__main__':
-    unittest.main()
-

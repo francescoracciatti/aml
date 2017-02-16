@@ -11,6 +11,7 @@
 # $ python3 -m unittest -v parser_test.py
 # -----------------------------------------------------------------------------
 
+import os
 import sys
 import enum
 import unittest
@@ -22,26 +23,20 @@ class TestParser(unittest.TestCase):
     """
     Tests for the parser.
     """
+
+    filename = "source.adl"
     
     def setUp(self):
         """
         Sets up the test.
         """
-        self.source = """
-            scenario {
-
-                variable var00
-                variable var01 = 1
-                variable var02 = "layer0.field0"
-                variable var03 = 0.3
-                packet pkt01
-                filter flt01 = ((var02 > var01) && ("layer1.field0" == var01)) || (var02 < var03)
-                list lst01 = [var01, 1, "string", 1.2]
-
-                from 200.0 s {}
-
-            }
-            """
+        if not os.path.exists(self.filename):
+            self.fail(self.filename + "does not exist")
+        if not os.path.isfile(self.filename):
+            self.fail(self.filename + "is a directory")
+        sourcefile = open(self.filename, 'r')
+        self.source = sourcefile.read()
+        sourcefile.close()
 
     def tearDown(self):
         """
@@ -58,7 +53,3 @@ class TestParser(unittest.TestCase):
         except (ValueError, RuntimeError) as e:
             self.fail(e)
         
-
-if __name__ == '__main__':
-    unittest.main()
-

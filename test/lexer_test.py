@@ -59,7 +59,3 @@ class TestLexer(unittest.TestCase):
         """
         self.assertListEqual(self.TestEnum.tokens(), self.tokens)
 
-
-if __name__ == '__main__':
-    unittest.main()
-

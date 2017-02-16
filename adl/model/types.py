@@ -132,6 +132,7 @@ class Variable(Symbol):
         self.value = value
 
 
+# TODO in case of real, substitute the decimal dot with an underscore
 class AutoVariable(Variable):
     """
     Container for automatic defined variables. 
@@ -247,6 +248,35 @@ class List(Symbol):
             raise ValueError("Empty tuple passed as items")
         self.identifier = identifier
         self.items = copy.deepcopy(items)
+
+
+class AutoList(List):
+    """
+    Container for automatic defined lists. 
+    It stores the list of identifiers that refer the items owned by te list.
+
+    :param symboltype: the type of the symbol
+    :type symboltype: Symbol.Type
+    """
+    
+    # The type of the symbol
+    symboltype = Symbol.Type.LIST
+
+    def __init__(self, items):
+        """
+        Initializes the AutoList object.
+        
+        :param items: The list of the identifiers that refer the items inside the list
+        :type items: list
+        """
+        if not items:
+            raise ValueError("list cannot be empty")
+        if items is None:
+            raise ValueError("list cannot be None")
+        identifier = Symbol._Symbol__prefix
+        for i in items:
+            identifier += i
+        super(AutoList, self).__init__(identifier, items)
 
 
 class SymbolTable(object):

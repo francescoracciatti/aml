@@ -101,9 +101,8 @@ class MisplaceNode(Primitive):
                      referring the node
         :type node: str
 
-        :param component: the identifier of the variable in the symbol table 
-                          referring the position
-        :type component: str
+        :param position: the identifier of the list containing the coordinates 
+        :type position: str
         """
         self.node = node
         self.position = position
@@ -302,19 +301,18 @@ class Expression(Primitive):
     Models an arithmetical expression.
     """
     
-    def __init__(self, destination, rpn):
+    def __init__(self, destination, expression):
         """
         Initializes the *Expression* object.
         
         :param destination: the identifier of the destination variable
         :type destination: str
         
-        :param rpn: the identifier of the list in the symbol table containing
-                    the expression stored in rpn order
-        :type rpn: list
+        :param expression: the list of the identifiers composing the expression
+        :type expression: list
         """
         self.destination = destination
-        self.rpn = rpn
+        self.expression = copy.deepcopy(expression)
 
 
 class Codeblock(metaclass=abc.ABCMeta):
