@@ -3,7 +3,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the model for the ADL codeblocks and primitives.
+# This module contains the model for the AML codeblocks and primitives.
 # -----------------------------------------------------------------------------
 
 import abc
@@ -454,7 +454,7 @@ class Conditional(Codeblock):
 
 class CodeblockTable(object):
     """
-    A codeblock table that supports ADL codelbocks.
+    A codeblock table that supports AML codelbocks.
     """
     
     def __init__(self, scope):

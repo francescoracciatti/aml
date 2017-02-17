@@ -5,7 +5,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module tests the mechanism for handling ADL types.
+# This module tests the mechanism for handling AML types.
 #
 # Usage: 
 # $ python3 -m unittest -v parser_test.py
@@ -16,15 +16,15 @@ import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../adl/")
-import adl as adl
+sys.path.insert(0,"../aml/")
+import aml as aml
 
 class TestParser(unittest.TestCase):
     """
     Tests for the parser.
     """
 
-    filename = "source.adl"
+    filename = "source.aml"
     
     def setUp(self):
         """
@@ -49,7 +49,7 @@ class TestParser(unittest.TestCase):
         """
         # Parses the source string
         try:
-            scenario = adl.ADL.parse(self.source)
+            scenario = aml.AML.parse(self.source)
         except (ValueError, RuntimeError) as e:
             self.fail(e)
         

@@ -5,7 +5,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module tests the mechanism for handling ADL types.
+# This module tests the mechanism for handling AML types.
 #
 # Usage: 
 # $ python3 -m unittest -v statements_test.py
@@ -16,12 +16,12 @@ import enum
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0,"../adl/")
+sys.path.insert(0,"../aml/")
 import model.statements as statements
 
 class TestPrimitive(unittest.TestCase):
     """
-    Tests for the ADL primitives.
+    Tests for the AML primitives.
     """
     
     def setUp(self):
@@ -205,7 +205,7 @@ class TestPrimitive(unittest.TestCase):
 
 class TestCodeblockTable(unittest.TestCase):
     """
-    Tests for the ADL codeblock table.
+    Tests for the AML codeblock table.
     """
     
     def setUp(self):
@@ -246,7 +246,7 @@ class TestCodeblockTable(unittest.TestCase):
 
 class TestCodeblockHandler(unittest.TestCase):
     """
-    Tests for the ADL codeblock handler.
+    Tests for the AML codeblock handler.
     """
     
     def setUp(self):

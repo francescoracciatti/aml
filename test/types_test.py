@@ -5,7 +5,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module tests the mechanism for handling ADL types.
+# This module tests the mechanism for handling AML types.
 #
 # Usage: 
 # $ python3 -m unittest -v types_test.py
@@ -15,14 +15,14 @@ import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../adl/")
+sys.path.insert(0,"../aml/")
 import model.types as types
 import lexer.lexer as lexer
 import lexer.keywords as keywords
 
 class TestTypes(unittest.TestCase):
     """
-    Tests for the mechanism to handle ADL types.
+    Tests for the mechanism to handle AML types.
     """
     
     def setUp(self):
@@ -198,7 +198,7 @@ class TestTypes(unittest.TestCase):
         
 class TestSymbolTable(unittest.TestCase):
     """
-    Tests for the ADL SymbolTable.
+    Tests for the AML SymbolTable.
     """
     
     def setUp(self):
@@ -432,7 +432,7 @@ class TestSymbolTable(unittest.TestCase):
 
 class TestSymbolHandler(unittest.TestCase):
     """
-    Tests for the ADL SymbolHandler.
+    Tests for the AML SymbolHandler.
     """
     
     def setUp(self):

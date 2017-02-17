@@ -3,7 +3,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the ADL keywords.
+# This module contains the AML keywords.
 # -----------------------------------------------------------------------------
 
 import enum
@@ -41,9 +41,9 @@ def tokens():
 
 def view():
     """
-    Builds the dictionary of the ADL keywords.
+    Builds the dictionary of the AML keywords.
     
-    :return: the dictionary of the ADL keywords
+    :return: the dictionary of the AML keywords
     """
     return {
         **Type.view(),
@@ -56,9 +56,9 @@ def view():
 
 def rview():
     """
-    Builds the reverse dictionary of the ADL keywords.
+    Builds the reverse dictionary of the AML keywords.
     
-    :return: the reverse dictionary of the ADL keywords
+    :return: the reverse dictionary of the AML keywords
     """
     return {
         **Type.rview(),
@@ -72,7 +72,7 @@ def rview():
 @enum.unique
 class Type(enum.Enum):
     """
-    Types supported by ADL.
+    Types supported by AML.
     """
     VARIABLE = 'variable'
     PACKET = 'packet'
@@ -119,7 +119,7 @@ class Type(enum.Enum):
 @enum.unique
 class Primitive(enum.Enum):
     """
-    ADL actions.
+    AML actions.
     """
     # Physical primitives on nodes' components
     DISABLECOMPONENT = 'disableComponent'
@@ -178,7 +178,7 @@ class Primitive(enum.Enum):
 @enum.unique
 class Statement(enum.Enum):
     """
-    ADL statements.
+    AML statements.
     """
     SCENARIO = 'scenario'
     PACKETS = 'packets'
@@ -227,7 +227,7 @@ class Statement(enum.Enum):
 @enum.unique
 class Accessor(enum.Enum):
     """
-    ADL accessors.
+    AML accessors.
     """
     MATCHING = 'matching'
     FOR = 'for'
@@ -273,7 +273,7 @@ class Accessor(enum.Enum):
 @enum.unique    
 class WellKnown(enum.Enum):
     """
-    ADL well known values.
+    AML well known values.
     """
     CAPTURED = 'captured'
     SELF = 'self'

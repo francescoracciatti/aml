@@ -5,7 +5,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module tests the ADL keywords.
+# This module tests the AML keywords.
 #
 # Usage: 
 # $ python3 -m unittest -v keywords_test.py
@@ -15,13 +15,13 @@ import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../adl/")
+sys.path.insert(0,"../aml/")
 import lexer.keywords as keywords
 
 
 class TestKeywords(unittest.TestCase):
     """
-    Tests for the ADL keywords.
+    Tests for the AML keywords.
     """
     
     @enum.unique 

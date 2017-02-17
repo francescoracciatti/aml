@@ -3,7 +3,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the mechanism for handling the ADL types.
+# This module contains the mechanism for handling the AML types.
 # -----------------------------------------------------------------------------
 
 import abc
@@ -281,7 +281,7 @@ class AutoList(List):
 
 class SymbolTable(object):
     """
-    A symbol table that supports ADL types.
+    A symbol table that supports AML types.
     """
     
     def __init__(self, scope):

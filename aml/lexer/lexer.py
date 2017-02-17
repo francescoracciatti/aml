@@ -136,11 +136,11 @@ operators = (
 )
 
 # TODO make it a tuple
-# The list of the ADL tokens
+# The list of the AML tokens
 tokens = BasicOperatorType.tokens() + BasicOperandType.tokens() + keywords.tokens()
 
 # TODO remove if it is possible or change name
-# The dict of the ADL reserved keywords
+# The dict of the AML reserved keywords
 reserved = keywords.rview()
 
 # Regex rules for compound assignment operators

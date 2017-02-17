@@ -5,7 +5,7 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module tests the ADL lexer.
+# This module tests the AML lexer.
 #
 # Usage: 
 # $ python3 -m unittest -v lexer_test.py
@@ -15,13 +15,13 @@ import sys
 import enum
 import unittest
 
-sys.path.insert(0,"../adl/")
+sys.path.insert(0,"../aml/")
 import lexer.lexer as lexer
 
 
 class TestLexer(unittest.TestCase):
     """
-    Tests for the ADL lexer.
+    Tests for the AML lexer.
     """
     
     @enum.unique 

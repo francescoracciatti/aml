@@ -1,25 +1,41 @@
-# ADL
-The Attack Description Language (ADL) is an high level modelling language. 
-It can be used to model cyber-physical attacks that can be carried out against complex networks (from NFCs to WANs).
+# Synopsis
+AML stands for Attack Modeling Language. It is a language to model cyber-physical attacks against cyber-physical systems and complex networks.
 
-# Description
-ADL is a simple yet powerful high level modelling language. 
-It provides a simple syntax based on a reduced set of keywords.
-
+# Code Example
 TBD
 
+# Motivation
+Cyber-physical systems (CPS) and complex networks can be severely compromised by cyber-physical attacks. 
+Since addressing all possible attacks is not viable, due to performance and economic reasons, it is fundamental to choose which attacks to address and which countermeasures to adopt. Hence, a quantitative analysis of attack impact is crucial to make an effective choice.
+
+To do so, it is fundamental to have a tool to model attack scenarios against the CPS/Net under survey, to be run afterward by using a dedicated simulator. 
+
+Note that AML is designed to be independent from the underlying simulator.
+
+# Requirements
+Python 3.6+
+
+# Installation
+### Linux/Unix
+TBD
+
+# How To Run It
+TBD
 
 # Tests
-To test the parsing engine move inside the folder test and do the following:
+Change the current working directory to the directory <i>aml/test</t> and type:
 ```shell
-$ python3 -B -m unittest discover -v  -p '*_test.py'
+$ python3 -B -m unittest discover -p '*_test.py' -v
 ```
 
-# Status
-Under-dev
-
-# Version
-2.0
-
-# Coverage
+# API Reference
 TBD
+
+# Acknowledgments
+* Marco Tiloca
+* Alessandro Pischedda
+* Gianluca Dini
+
+# License
+Copyright © 2016, [Francesco Racciatti](https://github.com/francescoracciatti). 
+Released under [MIT license](https://github.com/francescoracciatti/aml/blob/master/LICENSE).

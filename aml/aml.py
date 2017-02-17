@@ -1,18 +1,18 @@
 # -----------------------------------------------------------------------------
-# adl.py
+# aml.py
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module provides the ADL parser.
+# This module provides the AML parser.
 # -----------------------------------------------------------------------------
 
 import ply.yacc as yacc
 from lexer.lexer import *
 from parser.parser import *
 
-class ADL(object):
+class AML(object):
     """
-    ADL parser.
+    AML parser.
     """
         
     @staticmethod
