@@ -75,6 +75,9 @@ var/
 *.manifest
 *.spec
 
+# PyParsetab
+parsetab.py
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

@@ -170,6 +170,7 @@ def p_compound_value(p):
     time_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, time_identifier):
         temp_symbols.append(obj)
+    store_temp_symbols(0)
     obj = amltypes.Reserved(p[3])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
@@ -259,7 +260,6 @@ def p_once(p):
     """
     once : ONCE LCURVY once_content RCURVY
     """
-    #
     # Builds the compound and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
@@ -352,27 +352,131 @@ def p_periodics(p):
     periodics : periodic
               | periodics periodics
     """
-    # TODO TBI
 
 
 # Grammar rule for the periodic scope
 def p_periodic_identifier(p):
     """
-    periodic : EVERY IDENTIFIER unit LCURVY RCURVY
+    periodic : EVERY IDENTIFIER unit LCURVY periodic_content RCURVY
     """
-    # TODO TBI
+    time_identifier = p[2]
+    if not symbolhandler.exist(scopes - 1, time_identifier):
+        raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
+    obj = symbolhandler.object(time_identifier)
+    if obj.variabletype not in (amltypes.Variable.Type.INTEGER, amltypes.Variable.Type.INTEGER):
+        raise RuntimeError("identifier does not refer a number - line " + str(p.lineno(1)))
+    obj = amltypes.Reserved(p[3])
+    unit_identifier = obj.identifier
+    if not symbolhandler.exist(scopes - 1, unit_identifier):
+        symbolhandler.define(1, obj)
+    # Builds the periodic statement and stores it inside the codeblockhandler
+    symboltable = symbolhandler.scope_symboltable_dict[2]
+    codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
+    periodic = amlstatements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
+    codeblockhandler.append(1, compound)
+    # Clears support structures
+    symbolhandler.clear(2)
+    codeblockhandler.clear(2)
 
 
 # Grammar rule for the periodic scope
 def p_periodic_value(p):
     """
-    periodic : EVERY INTEGER unit LCURVY RCURVY
-             | EVERY REAL unit LCURVY RCURVY
+    periodic : EVERY INTEGER unit LCURVY periodic_content RCURVY
+             | EVERY REAL unit LCURVY periodic_content RCURVY
     """
-    # TODO TBI
+    time_value = p[2]
+    if time_value < 0:
+        raise RuntimeError("time cannot be negative - line " + str(p.lineno(1)))
+    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, float(time_value))
+    time_identifier = obj.identifier
+    if not symbolhandler.exist(scopes - 1, time_identifier):
+        temp_symbols.append(obj)
+    store_temp_symbols(1)
+    obj = amltypes.Reserved(p[3])
+    unit_identifier = obj.identifier
+    if not symbolhandler.exist(scopes - 1, unit_identifier):
+        symbolhandler.define(1, obj)
+    # Builds the periodic statement and stores it inside the codeblockhandler
+    symboltable = symbolhandler.scope_symboltable_dict[2]
+    codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
+    compound = amlstatements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
+    codeblockhandler.append(1, compound)
+    # Clears support structures
+    symbolhandler.clear(2)
+    codeblockhandler.clear(2)
 
 
-# TODO TBI
+# Grammar rule for the content of once
+def p_periodic_content(p):
+    """
+    periodic_content : periodic_variable_declaration
+                     | periodic_variable_definition
+                     | periodic_packet_declaration
+                     | periodic_filter_definition
+                     | periodic_list_definition
+                     | periodic_primitives
+                     | periodic_content periodic_content
+    """
+
+
+# Grammar rule for the declaration of a variable inside the compound scope
+def p_periodic_variable_declaration(p):
+    """
+    periodic_variable_declaration : VARIABLE IDENTIFIER
+    """
+    identifier = p[2]
+    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.VARIABLE):
+        raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
+
+# Grammar rule for the definition of a variale inside the compound scope
+def p_periodic_variable_definition(p):
+    """
+    periodic_variable_definition : variable_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the declaration of a packet inside the compound scope
+def p_periodic_packet_declaration(p):
+    """
+    periodic_packet_declaration : PACKET IDENTIFIER
+    """
+    identifier = p[2]
+    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.PACKET):
+        raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
+
+
+# Grammar rule for the definition of a filter inside the compound scope
+def p_periodic_filter_definition(p):
+    """
+    periodic_filter_definition : filter_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the definition of a list inside the compound scope
+def p_periodic_list_definition(p):
+    """
+    periodic_list_definition : list_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the periodic primitives
+def p_periodic_primitives(p):
+    """
+    periodic_primitives : primitive_disable_component
+                        | primitive_deceive_component
+                        | primitive_destroy_component
+                        | primitive_misplace_node
+                        | primitive_destroy_node
+                        | primitive_write_field
+                        | primitive_create_packet
+                        | primitive_inject_packet
+                        | primitive_clone_packet
+                        | primitive_expression
+    """
 
 
 # -----------------------------------------------------------------------------
