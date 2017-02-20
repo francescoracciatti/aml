@@ -86,6 +86,7 @@ def p_scenario_variable_declaration(p):
     if not symbolhandler.declare(0, identifier, amltypes.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
+
 # Grammar rule for the definition of a variale inside the scenario scope
 def p_scenario_variable_definition(p):
     """
@@ -373,7 +374,7 @@ def p_periodic_identifier(p):
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
     periodic = amlstatements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
-    codeblockhandler.append(1, compound)
+    codeblockhandler.append(1, periodic)
     # Clears support structures
     symbolhandler.clear(2)
     codeblockhandler.clear(2)
@@ -400,8 +401,8 @@ def p_periodic_value(p):
     # Builds the periodic statement and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
-    compound = amlstatements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
-    codeblockhandler.append(1, compound)
+    periodic = amlstatements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
+    codeblockhandler.append(1, periodic)
     # Clears support structures
     symbolhandler.clear(2)
     codeblockhandler.clear(2)
@@ -489,18 +490,111 @@ def p_conditionals(p):
     conditionals : conditional
                  | conditionals conditionals
     """
-    # TODO TBI
 
 
-# Grammar rule for the periodic scope
-def p_conditional(p):
+# Grammar rule for the conditional scope
+# TODO make it possible to pass list and filter by value
+def p_conditional_identifiers(p):
     """
-    conditional : FOR NODES IN IDENTIFIER LCURVY FOR PACKETS MATCHING IDENTIFIER LCURVY RCURVY RCURVY
+    conditional : FOR NODES IN IDENTIFIER LCURVY FOR PACKETS MATCHING IDENTIFIER LCURVY conditional_content RCURVY RCURVY
     """
-    # TODO TBI
+    # Checks the identifier of the list of nodes
+    identifier_nodes = p[4]
+    if not symbolhandler.exist(scopes - 1, identifier_nodes):
+        raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
+    nodes = symbolhandler.object(identifier_nodes)
+    if nodes.symboltype != amltypes.Symbol.Type.LIST:
+        raise RuntimeError("identifier does not refer a list - line " + str(p.lineno(1)))
+    # Checks the identifier of the packet filter
+    identifier_filter = p[9]
+    if not symbolhandler.exist(scopes - 1, identifier_filter):
+        raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
+    filter = symbolhandler.object(identifier_filter)
+    if filter.symboltype != amltypes.Symbol.Type.FILTER:
+        raise RuntimeError("identifier does not refer a filter - line " + str(p.lineno(1)))
+    # Builds the conditional statement and stores it inside the codeblockhandler
+    symboltable = symbolhandler.scope_symboltable_dict[2]
+    codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
+    conditional = amlstatements.Conditional(symboltable, codeblocktable, identifier_nodes, identifier_filter)
+    codeblockhandler.append(1, conditional)
+    # Clears support structures
+    symbolhandler.clear(2)
+    codeblockhandler.clear(2)
 
 
-# TODO TBI
+# Grammar rule for the content of once
+def p_conditional_content(p):
+    """
+    conditional_content : conditional_variable_declaration
+                        | conditional_variable_definition
+                        | conditional_packet_declaration
+                        | conditional_filter_definition
+                        | conditional_list_definition
+                        | conditional_primitives
+                        | conditional_content conditional_content
+    """
+
+
+# Grammar rule for the declaration of a variable inside the compound scope
+def p_conditional_variable_declaration(p):
+    """
+    conditional_variable_declaration : VARIABLE IDENTIFIER
+    """
+    identifier = p[2]
+    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.VARIABLE):
+        raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
+
+# Grammar rule for the definition of a variale inside the compound scope
+def p_conditional_variable_definition(p):
+    """
+    conditional_variable_definition : variable_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the declaration of a packet inside the compound scope
+def p_conditional_packet_declaration(p):
+    """
+    conditional_packet_declaration : PACKET IDENTIFIER
+    """
+    identifier = p[2]
+    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.PACKET):
+        raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
+
+
+# Grammar rule for the definition of a filter inside the compound scope
+def p_conditional_filter_definition(p):
+    """
+    conditional_filter_definition : filter_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the definition of a list inside the compound scope
+def p_conditional_list_definition(p):
+    """
+    conditional_list_definition : list_definition
+    """
+    store_temp_symbols(2)
+
+
+# Grammar rule for the conditional primitives
+def p_conditional_primitives(p):
+    """
+    conditional_primitives : primitive_disable_component
+                           | primitive_deceive_component
+                           | primitive_destroy_component
+                           | primitive_misplace_node
+                           | primitive_destroy_node
+                           | primitive_write_field
+                           | primitive_read_field
+                           | primitive_forward_packet
+                           | primitive_create_packet
+                           | primitive_inject_packet
+                           | primitive_clone_packet
+                           | primitive_drop_packet
+                           | primitive_expression
+    """
 
 
 # -----------------------------------------------------------------------------
@@ -556,6 +650,7 @@ def p_primitive_destroy_node(p):
 def p_primitive_write_field(p):
     """
     primitive_write_field : WRITEFIELD LROUND packet COMMA path COMMA source RROUND
+                          | WRITEFIELD LROUND captured COMMA path COMMA source RROUND
     """
     primitive = amlstatements.WriteField(p[3], p[5], p[7])
     codeblockhandler.append(2, primitive)
@@ -565,6 +660,7 @@ def p_primitive_write_field(p):
 def p_primitive_read_field(p):
     """
     primitive_read_field : READFIELD LROUND destination COMMA packet COMMA path RROUND
+                         | READFIELD LROUND destination COMMA captured COMMA path RROUND
     """
     primitive = amlstatements.ReadField(p[3], p[5], p[7])
     codeblockhandler.append(2, primitive)
@@ -573,6 +669,7 @@ def p_primitive_read_field(p):
 def p_primitive_forward_packet(p):
     """
     primitive_forward_packet : FORWARDPACKET LROUND packet COMMA delay COMMA unit RROUND
+                             | FORWARDPACKET LROUND captured COMMA delay COMMA unit RROUND
     """
     obj = amltypes.Reserved(p[7])
     unit_identifier = obj.identifier
@@ -618,8 +715,8 @@ def p_primitive_clone_packet(p):
 # Grammar rule for the primitive dropPacket
 def p_primitive_drop_packet(p):
     """
-    primitive_drop_packet : CLONEPACKET LROUND packet RROUND
-                          | CLONEPACKET LROUND CAPTURED RROUND
+    primitive_drop_packet : DROPPACKET LROUND packet RROUND
+                          | DROPPACKET LROUND captured RROUND
     """
     primitive = amlstatements.DropPacket(p[3])
     codeblockhandler.append(2, primitive)
@@ -1389,16 +1486,6 @@ def flatten(iterable):
                 yield relm
         else:
             yield elm
-
-
-def store_temp_statements(scope):
-    """
-    Stores the temporaries statement inside the codeblock handler
-    in the given scope.
-    """
-    for obj in temp_statements:
-        codeblockhandler.define(scope, obj)
-    del temp_statements[:]
 
 
 def store_temp_symbols(scope):
