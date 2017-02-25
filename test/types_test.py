@@ -68,7 +68,19 @@ class TestTypes(unittest.TestCase):
     def test_class_variable(self):
         """
         Tests the class types.Variable.
-        """       
+        """
+        # Test the class method autoidentifier
+        value = 1
+        autoidentifier = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(types.Variable.autoidentifier(value), autoidentifier)
+        value = 1.0
+        autoidentifier = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(types.Variable.autoidentifier(value), autoidentifier)
+        value = 'hello'
+        autoidentifier = types.Symbol._Symbol__prefix + str(value)
+        self.assertEqual(types.Variable.autoidentifier(value), autoidentifier)
+        
+        
         # Tests the type of the symbol
         self.assertEqual(types.Variable.symboltype, types.Symbol.Type.VARIABLE)
         # Tests the argument guards
@@ -90,31 +102,6 @@ class TestTypes(unittest.TestCase):
         self.assertEqual(obj.variabletype, variabletype)
         self.assertEqual(obj.value, value)
 
-    def test_class_autovariable(self):
-        """
-        Tests the class types.AutoVariable.
-        """       
-        # Tests the argument guards
-        variabletype = types.Variable.Type.NONE
-        value = 10
-        self.assertRaises(ValueError, types.AutoVariable, variabletype, value)
-        # Tests the initializer
-        variabletype = types.Variable.Type.INTEGER
-        obj = types.AutoVariable(variabletype, value)
-        test = types.Symbol._Symbol__prefix + str(value)
-        self.assertEqual(obj.identifier, test)
-
-        value = 'test'
-        variabletype = types.Variable.Type.STRING
-        obj = types.AutoVariable(variabletype, value)
-        test = types.Symbol._Symbol__prefix + str(value)
-        self.assertEqual(obj.identifier, test)
-        
-        value = 10.5
-        variabletype = types.Variable.Type.REAL
-        obj = types.AutoVariable(variabletype, value)
-        test = types.Symbol._Symbol__prefix + str(value)
-        self.assertEqual(obj.identifier, test)
 
     def test_class_packet(self):
         """
@@ -156,7 +143,13 @@ class TestTypes(unittest.TestCase):
     def test_class_list(self):
         """
         Tests the class types.List.
-        """       
+        """
+        # Tests the class method autoidentifier
+        items = ('id1', 'id2', 'id3')
+        autoidentifier = types.Symbol._Symbol__prefix
+        for i in items:
+            autoidentifier += i
+        self.assertEqual(types.List.autoidentifier(items), autoidentifier)
         # Tests the type of the symbol
         self.assertEqual(types.List.symboltype, types.Symbol.Type.LIST)
         # Tests the argument guards
@@ -174,27 +167,6 @@ class TestTypes(unittest.TestCase):
         self.assertEqual(obj.identifier, identifier)
         self.assertTupleEqual(obj.items, items)
         
-    def test_class_autolist(self):
-        """
-        Tests the class types.AutoList.
-        """       
-        # Tests the type of the symbol
-        self.assertEqual(types.AutoList.symboltype, types.Symbol.Type.LIST)
-        # Tests the argument guards
-        items = []
-        self.assertRaises(ValueError, types.AutoList, items)
-        identifier = None
-        self.assertRaises(ValueError, types.AutoList, items)
-        # Tests the initializer
-        items = ['var1', 'var2', 'var3']
-        obj = types.AutoList(items)
-        test = types.Symbol._Symbol__prefix
-        for i in items:
-            test += i
-        self.assertEqual(obj.identifier, test)
-        self.assertListEqual(obj.items, items)
-
-
         
 class TestSymbolTable(unittest.TestCase):
     """

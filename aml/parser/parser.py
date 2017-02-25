@@ -6,9 +6,9 @@
 # This module contains the grammar rules for the AML parser.
 # -----------------------------------------------------------------------------
 
-import lexer.lexer as amllexer
-import model.types as amltypes
-import model.statements as amlstatements
+import lexer.lexer as lexer
+import model.types as types
+import model.statements as statements
 
 
 # -----------------------------------------------------------------------------
@@ -19,10 +19,10 @@ import model.statements as amlstatements
 scopes = 3
 
 # The symbol handler
-symbolhandler = amltypes.SymbolHandler(scopes)
+symbolhandler = types.SymbolHandler(scopes)
 
 # The codeblock handler
-codeblockhandler = amlstatements.CodeblockHandler(scopes)
+codeblockhandler = statements.CodeblockHandler(scopes)
 
 # The list of temporary objects to be stored inside the handlers
 temp_symbols = []
@@ -58,7 +58,7 @@ def p_scenario(p):
     """
     symboltable = symbolhandler.scope_symboltable_dict[0]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[0]
-    scenario = amlstatements.Scenario(symboltable, codeblocktable)
+    scenario = statements.Scenario(symboltable, codeblocktable)
     symbolhandler.dump()
     codeblockhandler.dump()
     p[0] = scenario
@@ -83,7 +83,7 @@ def p_scenario_variable_declaration(p):
     scenario_variable_declaration : VARIABLE IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(0, identifier, amltypes.Symbol.Type.VARIABLE):
+    if not symbolhandler.declare(0, identifier, types.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
 
@@ -101,7 +101,7 @@ def p_scenario_packet_declaration(p):
     scenario_packet_declaration : PACKET IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(0, identifier, amltypes.Symbol.Type.PACKET):
+    if not symbolhandler.declare(0, identifier, types.Symbol.Type.PACKET):
         raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
 
 
@@ -142,16 +142,16 @@ def p_compound_identifier(p):
     if not symbolhandler.exist(scopes - 1, time_identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(time_identifier)
-    if obj.variabletype not in (amltypes.Variable.Type.INTEGER, amltypes.Variable.Type.INTEGER):
+    if obj.variabletype not in (types.Variable.Type.INTEGER, types.Variable.Type.INTEGER):
         raise RuntimeError("identifier does not refer a number - line " + str(p.lineno(1)))
-    obj = amltypes.Reserved(p[3])
+    obj = types.Reserved(p[3])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(0, obj)
     # Builds the compound and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[1]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[1]
-    compound = amlstatements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
+    compound = statements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
     codeblockhandler.append(0, compound)
     # Clears support structures
     symbolhandler.clear(1)
@@ -167,19 +167,19 @@ def p_compound_value(p):
     time_value = p[2]
     if time_value < 0:
         raise RuntimeError("time cannot be negative - line " + str(p.lineno(1)))
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, float(time_value))
+    obj = types.Variable(types.Variable.autoidentifier(time_value), types.Variable.Type.REAL, float(time_value))
     time_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, time_identifier):
         temp_symbols.append(obj)
     store_temp_symbols(0)
-    obj = amltypes.Reserved(p[3])
+    obj = types.Reserved(p[3])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(0, obj)
     # Builds the compound and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[1]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[1]
-    compound = amlstatements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
+    compound = statements.Compound(symboltable, codeblocktable, time_identifier, unit_identifier)
     codeblockhandler.append(0, compound)
     # Clears support structures
     symbolhandler.clear(1)
@@ -207,7 +207,7 @@ def p_compound_variable_declaration(p):
     compound_variable_declaration : VARIABLE IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(1, identifier, amltypes.Symbol.Type.VARIABLE):
+    if not symbolhandler.declare(1, identifier, types.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
 # Grammar rule for the definition of a variale inside the compound scope
@@ -224,7 +224,7 @@ def p_compound_packet_declaration(p):
     compound_packet_declaration : PACKET IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(1, identifier, amltypes.Symbol.Type.PACKET):
+    if not symbolhandler.declare(1, identifier, types.Symbol.Type.PACKET):
         raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
 
 
@@ -264,7 +264,7 @@ def p_once(p):
     # Builds the compound and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
-    once = amlstatements.Once(symboltable, codeblocktable)
+    once = statements.Once(symboltable, codeblocktable)
     codeblockhandler.append(1, once)
     # Clears support structures
     symbolhandler.clear(2)
@@ -290,7 +290,7 @@ def p_once_variable_declaration(p):
     once_variable_declaration : VARIABLE IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.VARIABLE):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
 # Grammar rule for the definition of a variale inside the compound scope
@@ -307,7 +307,7 @@ def p_once_packet_declaration(p):
     once_packet_declaration : PACKET IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.PACKET):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.PACKET):
         raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
 
 
@@ -364,16 +364,16 @@ def p_periodic_identifier(p):
     if not symbolhandler.exist(scopes - 1, time_identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(time_identifier)
-    if obj.variabletype not in (amltypes.Variable.Type.INTEGER, amltypes.Variable.Type.INTEGER):
+    if obj.variabletype not in (types.Variable.Type.INTEGER, types.Variable.Type.INTEGER):
         raise RuntimeError("identifier does not refer a number - line " + str(p.lineno(1)))
-    obj = amltypes.Reserved(p[3])
+    obj = types.Reserved(p[3])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(1, obj)
     # Builds the periodic statement and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
-    periodic = amlstatements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
+    periodic = statements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
     codeblockhandler.append(1, periodic)
     # Clears support structures
     symbolhandler.clear(2)
@@ -389,19 +389,19 @@ def p_periodic_value(p):
     time_value = p[2]
     if time_value < 0:
         raise RuntimeError("time cannot be negative - line " + str(p.lineno(1)))
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, float(time_value))
+    obj = types.Variable(types.Variable.autoidentifier(time_value), types.Variable.Type.REAL, float(time_value))
     time_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, time_identifier):
         temp_symbols.append(obj)
     store_temp_symbols(1)
-    obj = amltypes.Reserved(p[3])
+    obj = types.Reserved(p[3])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(1, obj)
     # Builds the periodic statement and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
-    periodic = amlstatements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
+    periodic = statements.Periodic(symboltable, codeblocktable, time_identifier, unit_identifier)
     codeblockhandler.append(1, periodic)
     # Clears support structures
     symbolhandler.clear(2)
@@ -427,7 +427,7 @@ def p_periodic_variable_declaration(p):
     periodic_variable_declaration : VARIABLE IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.VARIABLE):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
 # Grammar rule for the definition of a variale inside the compound scope
@@ -444,7 +444,7 @@ def p_periodic_packet_declaration(p):
     periodic_packet_declaration : PACKET IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.PACKET):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.PACKET):
         raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
 
 
@@ -503,19 +503,19 @@ def p_conditional_identifiers(p):
     if not symbolhandler.exist(scopes - 1, identifier_nodes):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     nodes = symbolhandler.object(identifier_nodes)
-    if nodes.symboltype != amltypes.Symbol.Type.LIST:
+    if nodes.symboltype != types.Symbol.Type.LIST:
         raise RuntimeError("identifier does not refer a list - line " + str(p.lineno(1)))
     # Checks the identifier of the packet filter
     identifier_filter = p[9]
     if not symbolhandler.exist(scopes - 1, identifier_filter):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     filter = symbolhandler.object(identifier_filter)
-    if filter.symboltype != amltypes.Symbol.Type.FILTER:
+    if filter.symboltype != types.Symbol.Type.FILTER:
         raise RuntimeError("identifier does not refer a filter - line " + str(p.lineno(1)))
     # Builds the conditional statement and stores it inside the codeblockhandler
     symboltable = symbolhandler.scope_symboltable_dict[2]
     codeblocktable = codeblockhandler.scope_codeblocktable_dict[2]
-    conditional = amlstatements.Conditional(symboltable, codeblocktable, identifier_nodes, identifier_filter)
+    conditional = statements.Conditional(symboltable, codeblocktable, identifier_nodes, identifier_filter)
     codeblockhandler.append(1, conditional)
     # Clears support structures
     symbolhandler.clear(2)
@@ -541,7 +541,7 @@ def p_conditional_variable_declaration(p):
     conditional_variable_declaration : VARIABLE IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.VARIABLE):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.VARIABLE):
         raise RuntimeError("cannot declare the variable - line " + str(p.lineno(1)))
 
 # Grammar rule for the definition of a variale inside the compound scope
@@ -558,7 +558,7 @@ def p_conditional_packet_declaration(p):
     conditional_packet_declaration : PACKET IDENTIFIER
     """
     identifier = p[2]
-    if not symbolhandler.declare(2, identifier, amltypes.Symbol.Type.PACKET):
+    if not symbolhandler.declare(2, identifier, types.Symbol.Type.PACKET):
         raise RuntimeError("cannot declare the packet - line " + str(p.lineno(1)))
 
 
@@ -606,7 +606,7 @@ def p_primitive_disable_component(p):
     """
     primitive_disable_component : DISABLECOMPONENT LROUND node COMMA component RROUND
     """
-    primitive = amlstatements.DisableComponent(p[3], p[5])
+    primitive = statements.DisableComponent(p[3], p[5])
     codeblockhandler.append(2, primitive)
 
 
@@ -615,7 +615,7 @@ def p_primitive_deceive_component(p):
     """
     primitive_deceive_component : DECEIVECOMPONENT LROUND node COMMA component COMMA value RROUND
     """
-    primitive = amlstatements.DeceiveComponent(p[3], p[5], p[7])
+    primitive = statements.DeceiveComponent(p[3], p[5], p[7])
     codeblockhandler.append(2, primitive)
 
 
@@ -624,7 +624,7 @@ def p_primitive_destroy_component(p):
     """
     primitive_destroy_component : DESTROYCOMPONENT LROUND node COMMA component RROUND
     """
-    primitive = amlstatements.DestroyComponent(p[3], p[5])
+    primitive = statements.DestroyComponent(p[3], p[5])
     codeblockhandler.append(2, primitive)
 
 
@@ -633,7 +633,7 @@ def p_primitive_misplace_node(p):
     """
     primitive_misplace_node : MISPLACENODE LROUND node COMMA position RROUND
     """
-    primitive = amlstatements.MisplaceNode(p[3], p[5])
+    primitive = statements.MisplaceNode(p[3], p[5])
     codeblockhandler.append(2, primitive)
 
 
@@ -642,7 +642,7 @@ def p_primitive_destroy_node(p):
     """
     primitive_destroy_node : DESTROYNODE LROUND node RROUND
     """
-    primitive = amlstatements.DestroyNode(p[3])
+    primitive = statements.DestroyNode(p[3])
     codeblockhandler.append(2, primitive)
 
 
@@ -652,7 +652,7 @@ def p_primitive_write_field(p):
     primitive_write_field : WRITEFIELD LROUND packet COMMA path COMMA source RROUND
                           | WRITEFIELD LROUND captured COMMA path COMMA source RROUND
     """
-    primitive = amlstatements.WriteField(p[3], p[5], p[7])
+    primitive = statements.WriteField(p[3], p[5], p[7])
     codeblockhandler.append(2, primitive)
 
 
@@ -662,7 +662,7 @@ def p_primitive_read_field(p):
     primitive_read_field : READFIELD LROUND destination COMMA packet COMMA path RROUND
                          | READFIELD LROUND destination COMMA captured COMMA path RROUND
     """
-    primitive = amlstatements.ReadField(p[3], p[5], p[7])
+    primitive = statements.ReadField(p[3], p[5], p[7])
     codeblockhandler.append(2, primitive)
 
 # Grammar rule for the primitive forwardPacket
@@ -671,11 +671,11 @@ def p_primitive_forward_packet(p):
     primitive_forward_packet : FORWARDPACKET LROUND packet COMMA delay COMMA unit RROUND
                              | FORWARDPACKET LROUND captured COMMA delay COMMA unit RROUND
     """
-    obj = amltypes.Reserved(p[7])
+    obj = types.Reserved(p[7])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(2, obj)   
-    primitive = amlstatements.ForwardPacket(p[3], p[5], unit_identifier)
+    primitive = statements.ForwardPacket(p[3], p[5], unit_identifier)
     codeblockhandler.append(2, primitive)
 
     
@@ -684,7 +684,7 @@ def p_primitive_create_packet(p):
     """
     primitive_create_packet : CREATEPACKET LROUND packet COMMA protocol RROUND
     """
-    primitive = amlstatements.CreatePacket(p[3], p[5])
+    primitive = statements.CreatePacket(p[3], p[5])
     codeblockhandler.append(2, primitive)
 
 
@@ -693,11 +693,11 @@ def p_primitive_inject_packet(p):
     """
     primitive_inject_packet : INJECTPACKET LROUND packet COMMA node COMMA direction COMMA delay COMMA unit RROUND
     """
-    obj = amltypes.Reserved(p[11])
+    obj = types.Reserved(p[11])
     unit_identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, unit_identifier):
         symbolhandler.define(2, obj)
-    primitive = amlstatements.InjectPacket(p[3], p[5], p[7], p[9], unit_identifier)
+    primitive = statements.InjectPacket(p[3], p[5], p[7], p[9], unit_identifier)
     codeblockhandler.append(2, primitive)
 
 
@@ -709,7 +709,7 @@ def p_primitive_clone_packet(p):
     """
     if p[3] == p[5]:
         raise RuntimeError("destination and source packets cannot match")
-    primitive = amlstatements.ClonePacket(p[3], p[5])
+    primitive = statements.ClonePacket(p[3], p[5])
     codeblockhandler.append(2, primitive)
 
 # Grammar rule for the primitive dropPacket
@@ -718,7 +718,7 @@ def p_primitive_drop_packet(p):
     primitive_drop_packet : DROPPACKET LROUND packet RROUND
                           | DROPPACKET LROUND captured RROUND
     """
-    primitive = amlstatements.DropPacket(p[3])
+    primitive = statements.DropPacket(p[3])
     codeblockhandler.append(2, primitive)
 
 # Grammar rule for the primitive Expression
@@ -742,20 +742,20 @@ def p_expression_assign(p):
         raise RuntimeError("undefined identifier - line " + str(p.lineno(1)))
     # Checks if the identifier refers a variable
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("the identifier does not refer a variable - line "+ str(p.lineno(1)))
     # Retrieves the expression (make it a list in case of single element)
     expression = [p[3]]
     # Evaluates the type of the expression
     expression = list(flatten(expression))
-    if obj.variabletype == amltypes.Variable.Type.NONE:
+    if obj.variabletype == types.Variable.Type.NONE:
         variabletype = get_expression_type(expression)
         symbolhandler.scope_symboltable_dict[2].identifier_object_dict[p[1]].variabletype = variabletype 
     else:
         if not check_expression_against_variabletype(expression, obj.variabletype):
             raise RuntimeError("cannot handle different types inside expressions - line "+ str(p.lineno(1)))
     # Builds the expression and appends it to the action list
-    primitive = amlstatements.Expression(identifier, expression)
+    primitive = statements.Expression(identifier, expression)
     codeblockhandler.append(2, primitive)
 
 
@@ -774,30 +774,30 @@ def p_expression_operation_assign(p):
         raise RuntimeError("undefined identifier - line " + str(p.lineno(1)))
     # Checks if the identifier refers a well defined variable
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("the identifier does not refer a variable - line "+ str(p.lineno(1)))
-    if obj.variabletype == amltypes.Variable.Type.NONE:
+    if obj.variabletype == types.Variable.Type.NONE:
         raise RuntimeError("the identifier refers an uninitialized variable - line "+ str(p.lineno(1)))
     # Retrieves the expression (make it a list in case of single element)
     expression = [p[3]]
     # Checks the type against the operator
     expression = list(flatten(expression))
     variabletype = get_expression_type(expression)
-    if variabletype == amltypes.Variable.Type.STRING:
-        if p[2] != amllexer.BasicOperatorType.ADDASSIGN.value:
+    if variabletype == types.Variable.Type.STRING:
+        if p[2] != lexer.BasicOperatorType.ADDASSIGN.value:
             raise RuntimeError("the operator does not support strings - line " + str(p.lineno(1)))
     # Defines the operator
     operator = None
-    if p[2] == amllexer.BasicOperatorType.ADDASSIGN.value:
-        operator = amltypes.Reserved(amllexer.BasicOperatorType.ADD.value)
-    elif p[2] == amllexer.BasicOperatorType.SUBASSIGN.value:
-        operator = amltypes.Reserved(amllexer.BasicOperatorType.SUB.value)
-    elif p[2] == amllexer.BasicOperatorType.MULASSIGN.value:
-        operator = amltypes.Reserved(amllexer.BasicOperatorType.MUL.value)
-    elif p[2] == amllexer.BasicOperatorType.DIVASSIGN.value:
-        operator = amltypes.Reserved(amllexer.BasicOperatorType.DIV.value)
-    elif p[2] == amllexer.BasicOperatorType.MODASSIGN.value:
-        operator = amltypes.Reserved(amllexer.BasicOperatorType.MOD.value)
+    if p[2] == lexer.BasicOperatorType.ADDASSIGN.value:
+        operator = types.Reserved(lexer.BasicOperatorType.ADD.value)
+    elif p[2] == lexer.BasicOperatorType.SUBASSIGN.value:
+        operator = types.Reserved(lexer.BasicOperatorType.SUB.value)
+    elif p[2] == lexer.BasicOperatorType.MULASSIGN.value:
+        operator = types.Reserved(lexer.BasicOperatorType.MUL.value)
+    elif p[2] == lexer.BasicOperatorType.DIVASSIGN.value:
+        operator = types.Reserved(lexer.BasicOperatorType.DIV.value)
+    elif p[2] == lexer.BasicOperatorType.MODASSIGN.value:
+        operator = types.Reserved(lexer.BasicOperatorType.MOD.value)
     else:
         raise RuntimeError("operator not recognized (bug, should never happen) - line " + str(p.lineno(1)))
     if not symbolhandler.exist(scopes - 1, operator.identifier):
@@ -805,7 +805,7 @@ def p_expression_operation_assign(p):
     expression = [expression, identifier, operator.identifier]
     expression = list(flatten(expression))
     # Builds the expression and appends it to the action list
-    primitive = amlstatements.Expression(identifier, expression)
+    primitive = statements.Expression(identifier, expression)
     codeblockhandler.append(2, primitive)
 
 
@@ -819,15 +819,15 @@ def p_expression_binop(p):
                | expression MOD expression
                | expression EXP expression
     """
-    operator = amltypes.Reserved(p[2])
+    operator = types.Reserved(p[2])
     if not symbolhandler.exist(scopes - 1, operator.identifier):
         symbolhandler.define(2, operator)
     rpn = [p[1], p[3], operator.identifier]
     expression = list(flatten(rpn))
     # Checks the type against the operator
     variabletype = get_expression_type(expression)
-    if variabletype == amltypes.Variable.Type.STRING:
-        if p[2] != amllexer.BasicOperatorType.ADD.value:
+    if variabletype == types.Variable.Type.STRING:
+        if p[2] != lexer.BasicOperatorType.ADD.value:
             raise RuntimeError("the operator does not support strings - line " + str(p.lineno(1)))
     p[0] = expression
 
@@ -839,13 +839,13 @@ def p_expression_uminus(p):
     """
     expression = list(flatten(p[2]))
     variabletype = get_expression_type(expression)
-    if variabletype == amltypes.Variable.Type.STRING:
+    if variabletype == types.Variable.Type.STRING:
         raise RuntimeError("the uminus cannot be applied to strings - line " + str(p.lineno(1)))
     value = -1
-    variable = amltypes.AutoVariable(amltypes.Variable.Type.INTEGER, value)
+    variable = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.INTEGER, value)
     if not symbolhandler.exist(scopes - 1, variable.identifier):
         symbolhandler.define(2, variable)
-    operator = amltypes.Reserved(amllexer.BasicOperatorType.MUL.value)
+    operator = types.Reserved(lexer.BasicOperatorType.MUL.value)
     if not symbolhandler.exist(scopes - 1, operator.identifier):
         symbolhandler.define(2, operator)
     expression = [expression, variable.identifier, operator.identifier]
@@ -866,7 +866,7 @@ def p_expression_integer(p):
     expression : INTEGER
     """
     value = p[1]
-    variable = amltypes.AutoVariable(amltypes.Variable.Type.INTEGER, value)
+    variable = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.INTEGER, value)
     if not symbolhandler.exist(scopes - 1, variable.identifier):
         symbolhandler.define(2, variable)
     p[0] = variable.identifier
@@ -878,7 +878,7 @@ def p_expression_string(p):
     expression : STRING
     """
     value = p[1]
-    variable = amltypes.AutoVariable(amltypes.Variable.Type.STRING, value)
+    variable = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.STRING, value)
     if not symbolhandler.exist(scopes - 1, variable.identifier):
         symbolhandler.define(2, variable)
     p[0] = variable.identifier
@@ -890,7 +890,7 @@ def p_expression_real(p):
     expression : REAL
     """
     value = p[1]
-    variable = amltypes.AutoVariable(amltypes.Variable.Type.REAL, value)
+    variable = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.REAL, value)
     if not symbolhandler.exist(scopes - 1, variable.identifier):
         symbolhandler.define(2, variable)
     p[0] = variable.identifier
@@ -907,9 +907,9 @@ def p_expression_identifier(p):
         raise RuntimeError("undefined identifier - line " + str(p.lineno(1)))
     # Checks if the identifier refers a well defined variable
     variable = symbolhandler.object(identifier)
-    if variable.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if variable.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("the identifier does not refer a variable - line "+ str(p.lineno(1)))
-    if variable.variabletype == amltypes.Variable.Type.NONE:
+    if variable.variabletype == types.Variable.Type.NONE:
         raise RuntimeError("the variable is undefined - line "+ str(p.lineno(1)))
     p[0] = identifier
 
@@ -979,7 +979,7 @@ def p_argument_packet(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.PACKET:
+    if obj.symboltype != types.Symbol.Type.PACKET:
         raise RuntimeError("identifier does not refer a packet - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1015,7 +1015,7 @@ def p_argument_destination(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1029,9 +1029,9 @@ def p_argument_delay_reference(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
-    if obj.variabletype not in (amltypes.Variable.Type.INTEGER, amltypes.Variable.Type.REAL):
+    if obj.variabletype not in (types.Variable.Type.INTEGER, types.Variable.Type.REAL):
         raise RuntimeError("identifier does not refer a number - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1053,9 +1053,9 @@ def p_argument_protocol_reference(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not defined - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
-    if obj.variabletype != amltypes.Variable.Type.STRING:
+    if obj.variabletype != types.Variable.Type.STRING:
         raise RuntimeError("identifier does not refer a string - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1075,7 +1075,7 @@ def p_argument_direction(p):
               | RX
     """
     value = p[1]
-    obj = amltypes.Reserved(value)
+    obj = types.Reserved(value)
     identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, identifier):
         symbolhandler.define(2, obj)
@@ -1088,7 +1088,7 @@ def p_argument_captured(p):
     captured : CAPTURED
     """
     value = p[1]
-    obj = amltypes.Reserved(value)
+    obj = types.Reserved(value)
     identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, identifier):
         symbolhandler.define(2, obj)
@@ -1104,9 +1104,9 @@ def p_argument_identifier_variable_defined(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not declared - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
-    if obj.variabletype == amltypes.Variable.Type.NONE:
+    if obj.variabletype == types.Variable.Type.NONE:
         # TODO search for an expression inside this scope
         raise RuntimeError("identifier refers an uni variable - line " + str(p.lineno(1)))
     p[0] = identifier
@@ -1118,7 +1118,7 @@ def p_argument_value_integer(p):
     value_integer : INTEGER
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.INTEGER, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.INTEGER, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         symbolhandler.define(2, obj)
     p[0] = obj.identifier
@@ -1129,7 +1129,7 @@ def p_argument_value_string(p):
     value_string : STRING
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.STRING, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.STRING, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         symbolhandler.define(2, obj)
     p[0] = obj.identifier
@@ -1141,7 +1141,7 @@ def p_argument_value_real(p):
     value_real : REAL
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.REAL, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         symbolhandler.define(2, obj)
     p[0] = obj.identifier
@@ -1156,7 +1156,7 @@ def p_argument_identifier_list_defined(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not declared - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.LIST:
+    if obj.symboltype != types.Symbol.Type.LIST:
         raise RuntimeError("identifier does not refer a list - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1167,7 +1167,7 @@ def p_argument_list_value(p):
     list_value : LBRACK list_sequence RBRACK
     """
     items = list(flatten(p[2]))
-    obj = amltypes.AutoList(items)
+    obj = types.List(types.List.autoidentifier(items), items)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         symbolhandler.define(2, obj)
     p[0] = obj.identifier
@@ -1195,7 +1195,7 @@ def p_variable_definition_integer(p):
     if symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier already defined - line " + str(p.lineno(1)))        
     value = p[4]
-    obj = amltypes.Variable(identifier, amltypes.Variable.Type.INTEGER, value)
+    obj = types.Variable(identifier, types.Variable.Type.INTEGER, value)
     temp_symbols.append(obj)
     
 
@@ -1206,7 +1206,7 @@ def p_variable_definition_string(p):
     """
     identifier = p[2]
     value = p[4]
-    obj = amltypes.Variable(identifier, amltypes.Variable.Type.STRING, value)
+    obj = types.Variable(identifier, types.Variable.Type.STRING, value)
     temp_symbols.append(obj)
 
 
@@ -1219,7 +1219,7 @@ def p_variable_definition_real(p):
     if symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier already defined - line " + str(p.lineno(1)))        
     value = p[4]
-    obj = amltypes.Variable(identifier, amltypes.Variable.Type.REAL, value)
+    obj = types.Variable(identifier, types.Variable.Type.REAL, value)
     temp_symbols.append(obj)
 
 
@@ -1236,7 +1236,7 @@ def p_filter_definition(p):
     if symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier already defined - line " + str(p.lineno(1)))
     flattened = list(flatten(p[4]))
-    obj = amltypes.Filter(identifier, flattened)
+    obj = types.Filter(identifier, flattened)
     temp_symbols.append(obj)    
 
 
@@ -1302,7 +1302,7 @@ def p_filter_operand_value_integer(p):
     filter_operand : INTEGER
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.INTEGER, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.INTEGER, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1313,7 +1313,7 @@ def p_filter_operand_value_string(p):
     filter_operand : STRING
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.STRING, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.STRING, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1325,7 +1325,7 @@ def p_filter_operand_value_real(p):
     filter_operand : REAL
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.REAL, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1340,9 +1340,9 @@ def p_filter_operand_identifier(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not declared - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
-    if obj.variabletype == amltypes.Variable.Type.NONE:
+    if obj.variabletype == types.Variable.Type.NONE:
         raise RuntimeError("identifier refers an uninitialized variable - line " + str(p.lineno(1)))
     p[0] = identifier
 
@@ -1358,7 +1358,7 @@ def p_filter_comparison_operator(p):
                                | GRTHN
     """
     value = p[1]
-    obj = amltypes.Reserved(value)
+    obj = types.Reserved(value)
     identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, identifier):
         temp_symbols.append(obj)
@@ -1372,7 +1372,7 @@ def p_filter_logical_operator(p):
                             | LOR
     """
     value = p[1]
-    obj = amltypes.Reserved(value)
+    obj = types.Reserved(value)
     identifier = obj.identifier
     if not symbolhandler.exist(scopes - 1, identifier):
         temp_symbols.append(obj)
@@ -1392,7 +1392,7 @@ def p_list_definition(p):
     if symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier already defined - line " + str(p.lineno(1)))
     items = list(flatten(p[5]))
-    obj = amltypes.List(identifier, items)
+    obj = types.List(identifier, items)
     temp_symbols.append(obj)    
 
 
@@ -1418,7 +1418,7 @@ def p_list_item_integer(p):
     list_item : INTEGER
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.INTEGER, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.INTEGER, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1429,7 +1429,7 @@ def p_list_item_string(p):
     list_item : STRING
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.STRING, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.STRING, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1441,7 +1441,7 @@ def p_list_item_real(p):
     list_item : REAL
     """
     value = p[1]
-    obj = amltypes.AutoVariable(amltypes.Variable.Type.REAL, value)
+    obj = types.Variable(types.Variable.autoidentifier(value), types.Variable.Type.REAL, value)
     if not symbolhandler.exist(scopes - 1, obj.identifier):
         temp_symbols.append(obj)
     p[0] = obj.identifier
@@ -1456,9 +1456,9 @@ def p_list_item_identifier(p):
     if not symbolhandler.exist(scopes - 1, identifier):
         raise RuntimeError("identifier not declared - line " + str(p.lineno(1)))
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("identifier does not refer a variable - line " + str(p.lineno(1)))
-    if obj.variabletype == amltypes.Variable.Type.NONE:
+    if obj.variabletype == types.Variable.Type.NONE:
         raise RuntimeError("identifier refers an uninitialized variable - line " + str(p.lineno(1)))
     p[0] = identifier
     
@@ -1479,6 +1479,9 @@ def p_error(p):
 def flatten(iterable):
     """
     Flattens multilevel lists and tuples.
+    
+    :param iterable: the list of iterables
+    :type iterable: list
     """
     for elm in iterable:
         if isinstance(elm, (list, tuple)):
@@ -1509,13 +1512,13 @@ def get_expression_type(identifiers):
     items = list(identifiers)
     identifier = items[0]
     obj = symbolhandler.object(identifier)
-    if obj.symboltype != amltypes.Symbol.Type.VARIABLE:
+    if obj.symboltype != types.Symbol.Type.VARIABLE:
         raise RuntimeError("expression badly formed")
     # Evaluates the expression against the type of the first item
     type = obj.variabletype
     for identifier in identifiers:
         obj = symbolhandler.object(identifier)
-        if obj.symboltype == amltypes.Symbol.Type.VARIABLE:
+        if obj.symboltype == types.Symbol.Type.VARIABLE:
             if obj.variabletype != type:
                 raise RuntimeError("expressions cannot support operations between different types")
     return type
@@ -1529,12 +1532,11 @@ def check_expression_against_variabletype(identifiers, variabletype):
     :type identifiers: list
     
     :param type: the type of the variable
-    :type type: amltypes.Variable.Type
-    
+    :type type: types.Variable.Type
     """
     for identifier in identifiers:
         obj = symbolhandler.object(identifier)
-        if obj.symboltype == amltypes.Symbol.Type.VARIABLE:
+        if obj.symboltype == types.Symbol.Type.VARIABLE:
             if obj.variabletype != variabletype:
                 return False
     return True

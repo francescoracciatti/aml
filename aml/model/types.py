@@ -103,6 +103,17 @@ class Variable(Symbol):
     # The variable types
     Type = enum.Enum('Type', _build_variable_types())
     
+    
+    @classmethod
+    def autoidentifier(cls, value):
+        """
+        Builds an identifier from the value.
+        """
+        if value is None:
+            raise ValueError("Cannot handle None")
+        return Symbol._Symbol__prefix + str(value)
+        
+    
     def __init__(self, identifier, variabletype, value):
         """
         Initializes the Variable object.
@@ -130,35 +141,6 @@ class Variable(Symbol):
         self.identifier = identifier
         self.variabletype = variabletype
         self.value = value
-
-
-# TODO in case of real, substitute the decimal dot with an underscore
-class AutoVariable(Variable):
-    """
-    Container for automatic defined variables. 
-    It can store a single string, integer or real value.
-
-    :param symboltype: the type of the symbol
-    :type symboltype: Symbol.Type
-    """
-    
-    # The type of the symbol
-    symboltype = Symbol.Type.VARIABLE
-
-    def __init__(self, variabletype, value):
-        """
-        Initializes the AutoVariable object.
-        
-        :param variabletype: The type of the variable
-        :type variabletype: str
-
-        :param value: The value of the variable
-        :type value: str
-        """
-        if variabletype == Variable.Type.NONE:
-            raise ValueError("type cannot be Variable.Type.NONE")
-        identifier = Symbol._Symbol__prefix + str(value)
-        super(AutoVariable, self).__init__(identifier, variabletype, value)
 
 
 class Packet(Symbol):
@@ -230,6 +212,21 @@ class List(Symbol):
     # The type of the symbol
     symboltype = Symbol.Type.LIST
     
+    @classmethod
+    def autoidentifier(cls, items):
+        """
+        Builds an identifier form the items.
+        """
+        if not items:
+            raise ValueError("Cannot handle empty lists")
+        if items is None:
+            raise ValueError("Cannot handle None")
+        identifier = Symbol._Symbol__prefix
+        for i in items:
+            identifier += i
+        return identifier
+    
+    
     def __init__(self, identifier, items):
         """
         Initializes the List object.
@@ -248,35 +245,6 @@ class List(Symbol):
             raise ValueError("Empty tuple passed as items")
         self.identifier = identifier
         self.items = copy.deepcopy(items)
-
-
-class AutoList(List):
-    """
-    Container for automatic defined lists. 
-    It stores the list of identifiers that refer the items owned by te list.
-
-    :param symboltype: the type of the symbol
-    :type symboltype: Symbol.Type
-    """
-    
-    # The type of the symbol
-    symboltype = Symbol.Type.LIST
-
-    def __init__(self, items):
-        """
-        Initializes the AutoList object.
-        
-        :param items: The list of the identifiers that refer the items inside the list
-        :type items: list
-        """
-        if not items:
-            raise ValueError("list cannot be empty")
-        if items is None:
-            raise ValueError("list cannot be None")
-        identifier = Symbol._Symbol__prefix
-        for i in items:
-            identifier += i
-        super(AutoList, self).__init__(identifier, items)
 
 
 class SymbolTable(object):
@@ -579,5 +547,4 @@ class SymbolHandler(object):
             if obj is not None:
                 return obj
         return None
-
 
