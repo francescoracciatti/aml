@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/francescoracciatti/aml.svg?branch=master)](https://travis-ci.org/francescoracciatti/aml)
+
 [![codecov](https://codecov.io/gh/francescoracciatti/aml/branch/master/graph/badge.svg)](https://codecov.io/gh/francescoracciatti/aml)
 
 # AML
