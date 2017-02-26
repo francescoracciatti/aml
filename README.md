@@ -9,8 +9,8 @@ AML provides:
 * an interpreter that provides the representation of the attack scenarios.
  
 ## Synopsis
-AML is designed to be used on top of the off-the-shelf simulators of cyber-physical systems and networks.
-Its purpose is to enable the simulation of the effects of the modeled attack scenarios on the simulated systems under survey.
+AML is designed to be used on top of the off-the-shelf cyber-physical systems and networks simulators.
+Its purpose is to enable the simulation of the effects of the modeled attacks on the systems under survey.
 
 ## Motivation
 Cyber-physical systems and networks can be severely compromised by cyber-physical attacks. 
@@ -25,21 +25,21 @@ Let the figure 1 represent the network scenario.
 
 TODO add the figure
 
-We want perform the attack scenario that follows:
-* at time 50 s destroy the sensor node 1
-* from time 100 inject a fake udp packets toward the node 3 every 10 ms
-* from time 100 capture and drop all the udp messages having the source 
-port number 2000 passing through the node 4
+When the simulation starts, we want to perform the attack scenario that follows:
+* at time 100 s destroy the sensor node 1
+* from time 100, every 10 ms, inject a fake udp packets toward the node 3
+* from time 100 drop all the messages passing through the node 4 having the source port number 80
 
 The AML code is the following:
 ```aml
 scenario {
-    from 50 {
+
+    from 100 {
+
         once {    
             destroyNode(1)
         }
-    }
-    from 100 {
+        
         every 10 ms {
             packet fake
             createPacket(fake, "udp")
@@ -47,13 +47,15 @@ scenario {
         }
 
         list targets = [4]
-        filter packetfilter = (("layer4.sourcePort" == 2000))
+        filter packetfilter = (("layer4.sourcePort" == 80))
         for nodes in targets {
             for packets matching packetfilter {
                 drop(captured)
             }
         }
+    
     }
+
 }
 ```
 
