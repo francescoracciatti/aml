@@ -1,7 +1,7 @@
 [![codecov](https://codecov.io/gh/francescoracciatti/aml/branch/master/graph/badge.svg)](https://codecov.io/gh/francescoracciatti/aml)
 
 # AML
-AML stands for Attack Modeling Language. It is a language to model cyber-physical attacks against cyber-physical systems and complex networks.
+AML stands for Attack Modeling Language. It is a language to model cyber-physical attacks against cyber-physical systems and networks.
 
 AML provides:
 * a set of keywords and syntax rules to model attack scenarios against generic systems,
@@ -12,7 +12,7 @@ AML is designed to be used on top of the off-the-shelf simulators of cyber-physi
 Its purpose is to enable the simulation of the effects of the modeled attack scenarios on the simulated systems under survey.
 
 ## Motivation
-Cyber-physical systems and complex networks can be severely compromised by cyber-physical attacks. 
+Cyber-physical systems and networks can be severely compromised by cyber-physical attacks. 
 Since addressing all possible attacks is not viable, due to performance and economic reasons, it is fundamental to choose which attacks to address and which countermeasures to adopt. Hence, a quantitative analysis of attack impact is crucial to make an effective choice.
 
 To do this, it is fundamental to have a tool to model attack scenarios against the system under survey, to be run 
