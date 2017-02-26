@@ -51,8 +51,6 @@ class TestParser(unittest.TestCase):
         # Parses the source string
         try:
             scenario = aml.AML.parse(self.source)
-            print()
-            print(xml.Xml.codeblock(scenario, 0))
         except (ValueError, RuntimeError) as e:
             self.fail(e)
         
