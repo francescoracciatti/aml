@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # -----------------------------------------------------------------------------
-# testlexer.py
+# lexer_test.py
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #

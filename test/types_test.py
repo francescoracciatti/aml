@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # -----------------------------------------------------------------------------
-# testkeywords.py
+# types_test.py
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #

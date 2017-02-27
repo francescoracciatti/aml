@@ -28,24 +28,23 @@ TODO add the figure
 When the simulation starts, we want to perform the attack scenario that follows:
 * at time 100 s destroy the sensor node 1
 * from time 100, every 10 ms, inject a fake udp packets toward the node 3
-* from time 100 drop all the messages passing through the node 4 having the source port number 80
+* from time 100 drop all the messages having the source port number 80 passing through the node 4
 
 The AML code is the following:
 ```aml
 scenario {
-
     from 100 {
-
+        # Destroy node
         once {    
             destroyNode(1)
         }
-        
+        # Inject fake packets
         every 10 ms {
             packet fake
             createPacket(fake, "udp")
             injectPacket(fake, 3, rx, 0, s)
         }
-
+        # Selective drop
         list targets = [4]
         filter packetfilter = (("layer4.sourcePort" == 80))
         for nodes in targets {
@@ -53,9 +52,7 @@ scenario {
                 drop(captured)
             }
         }
-    
     }
-
 }
 ```
 

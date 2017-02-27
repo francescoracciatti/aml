@@ -236,7 +236,4 @@ def t_error(t):
     # TODO check if the fix does work and remove the old code below
     #print("[Error] illegal character " + str(t.value[0]))
     #t.lexer.skip(1)
-	
-	
-# Builds the lexer
-lexer = lex.lex()
+

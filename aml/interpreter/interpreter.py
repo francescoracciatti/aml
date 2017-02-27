@@ -3,16 +3,40 @@
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
-# This module contains the XML interpreter for AML.
+# This module contains the interpreting services for AML.
 # -----------------------------------------------------------------------------
+
+import abc
+import enum
 
 import model.types as types
 import model.statements as statements
 
-class Xml(object):
+
+class Interpreter(metaclass=abc.ABCMeta):
+    """
+    Abstract base class for interpreters.
+    """
+    
+    @abc.abstractclassmethod
+    def interpret(cls, aml, type):
+        """
+        Interprets the given AML source string.
+        """
+        pass
+
+
+class Xml(Interpreter):
     """
     Provides an XML interpreter for AML.
     """
+
+    @classmethod
+    def interpret(cls, aml, type):
+        xml = ''
+        xml += '<?xml version="1.0"?>'
+        xml += cls.codeblock(aml, type)
+        return xml
 
     @classmethod
     def codeblock(cls, codeblock, indent):
@@ -89,3 +113,31 @@ class Xml(object):
         xml += '\t' * indent + '</' + symboltable_nameclass + '>\n'
         return xml
 
+
+class InterpreterService(object):
+    """
+    Provides the XML interpreting service.
+    """
+    
+    @enum.unique
+    class Type(enum.Enum):
+        """
+        Interpreting services.
+        """
+        XML = 'xml'
+        JSON = 'json'
+        YAML = 'yaml'
+
+    @classmethod
+    def interpret(cls, aml, type):
+        """
+        Interprets the given AML source string.
+        """
+        if type == Type.XML:
+            return xml.Xml.intepret(aml, 0)
+        elif type == Type.YAML:
+            raise NotImplementedError("not implemented yet")
+        elif type == Type.JSON:
+            raise NotImplementedError("not implemented yet")
+        else:
+            raise ValueError("type not supported")

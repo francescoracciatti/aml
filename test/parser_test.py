@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # -----------------------------------------------------------------------------
-# testkeywords.py
+# parser_test.py
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
@@ -18,7 +18,6 @@ import unittest
 
 sys.path.insert(0,"../aml/")
 import aml as aml
-import interpreter.xml as xml
 
 class TestParser(unittest.TestCase):
     """
@@ -53,4 +52,4 @@ class TestParser(unittest.TestCase):
             scenario = aml.AML.parse(self.source)
         except (ValueError, RuntimeError) as e:
             self.fail(e)
-        
+

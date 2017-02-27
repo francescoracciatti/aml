@@ -12,21 +12,37 @@ from parser.parser import *
 
 class AML(object):
     """
-    AML parser.
+    AML parser and interpreter.
     """
-        
+    
     @staticmethod
     def parse(source):
         """
         Parses the source string and builds the object representing the scenario.
-        
-        :param source: the string to be parsed
-        :type source: str
-        
-        :return: the scenario
         """
-        
-        # Initializes the yacc
-        yacc.yacc(debug = 0, start = 'entry')
+        # Builds the lexer object
+        lexer = lex.lex()
         # Parses the source file
-        return yacc.parse(source)
+        parser = yacc.yacc(start = 'entry')
+        aml = parser.parse(source, lexer=lexer)
+        parser.restart()
+        return aml
+        
+        
+    @staticmethod
+    def intepret(aml, type):
+        """
+        Interprets the aml source string.
+        """
+        raise NotImplementedError("not implemented yet")
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # -----------------------------------------------------------------------------
-# testkeywords.py
+# statements_test.py
 #
 # Author: Francesco Racciatti (racciatti.francesco@gmail.com)
 #
